@@ -40,7 +40,7 @@ for(let i = 0; i < forestHeight; i++)
 }
 console.log(forestArray);
 
-startAnimating(60);
+startAnimating(20);
 
 ctx.fillStyle = 'rgb(100,100,100)';
 ctx.fillRect(0, 0, forestWidth*cellSize + 2*borderWidth, forestHeight*cellSize + 2*borderWidth);
