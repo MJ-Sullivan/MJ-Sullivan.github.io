@@ -15,8 +15,8 @@ let counter = 0;
 cellSize = 5;
 borderWidth = 4;
 
-let forestWidth = 100;
-let forestHeight = 100;
+let forestWidth = 10;
+let forestHeight = 10;
 
 let cWidth = canvas.width;
 let cHeight = canvas.height;
