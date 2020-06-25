@@ -12,11 +12,11 @@ ctx.fillStyle = 'rgb(200,0,0)';
 
 let counter = 0;
 
-cellSize = 2;
+cellSize = 5;
 borderWidth = 4;
 
-let forestWidth = 200;
-let forestHeight = 200;
+let forestWidth = 100;
+let forestHeight = 100;
 
 let cWidth = canvas.width;
 let cHeight = canvas.height;
