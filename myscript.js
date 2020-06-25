@@ -147,6 +147,8 @@ function animate()
                 }
             }
         }
+        ctx.font = "30px Arial";
+        ctx.strokeText("$forestWidth$", 10, 10);
         counter++;
     }    
 }
