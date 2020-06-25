@@ -40,7 +40,7 @@ for(let i = 0; i < forestHeight; i++)
 }
 console.log(forestArray);
 
-startAnimating(30);
+startAnimating(60);
 
 ctx.fillStyle = 'rgb(100,100,100)';
 ctx.fillRect(0, 0, forestWidth*cellSize + 2*borderWidth, forestHeight*cellSize + 2*borderWidth);
@@ -147,8 +147,12 @@ function animate()
                 }
             }
         }
-        ctx.font = "30px Arial";
-        ctx.strokeText("$forestWidth$", 10, 10);
+
+        ctx.fillStyle = 'rgb(107,107,107)';
+        ctx.fillRect(borderWidth, borderWidth, 60, 10);
+        ctx.font = "10px Arial";
+        ctx.fillStyle = "rgb(255,255,255)";
+        ctx.fillText(`Width: ${forestWidth}`, 5, 10);
         counter++;
     }    
 }
