@@ -12,11 +12,11 @@ ctx.fillStyle = 'rgb(200,0,0)';
 
 let counter = 0;
 
-cellSize = 5;
+cellSize = 2;
 borderWidth = 4;
 
-let forestWidth = 100;
-let forestHeight = 100;
+let forestWidth = 150;
+let forestHeight = 150;
 
 let cWidth = canvas.width;
 let cHeight = canvas.height;
@@ -40,7 +40,7 @@ for(let i = 0; i < forestHeight; i++)
 }
 console.log(forestArray);
 
-startAnimating(20);
+startAnimating(15);
 
 ctx.fillStyle = 'rgb(100,100,100)';
 ctx.fillRect(0, 0, forestWidth*cellSize + 2*borderWidth, forestHeight*cellSize + 2*borderWidth);
