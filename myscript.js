@@ -1,5 +1,29 @@
 var canvas = document.getElementById("forestfire");
 
+
+var button = document.createElement("BUTTON");
+button.id = 'button';
+var buttonText = document.createTextNode("Forest reset");
+button.appendChild(buttonText);
+button.onclick = function()
+{
+    forestArray = [];
+
+    for(let i = 0; i < forestHeight; i++)
+    {
+        let arrayRow = [];
+        for(let j = 0; j < forestWidth; j++)
+        {
+            arrayRow.push(0);
+        }
+        forestArray.push(arrayRow);
+    }
+
+}
+document.body.appendChild(button);
+
+
+
 var ctx = canvas.getContext('2d');
 
 function mod(n, m) 
@@ -15,8 +39,8 @@ let counter = 0;
 cellSize = 2;
 borderWidth = 4;
 
-let forestWidth = 300;
-let forestHeight = 300;
+let forestWidth = 200;
+let forestHeight = 200;
 
 let cWidth = canvas.width;
 let cHeight = canvas.height;
@@ -40,11 +64,9 @@ for(let i = 0; i < forestHeight; i++)
 }
 console.log(forestArray);
 
+
 startAnimating(60);
 
-ctx.fillStyle = 'rgb(100,100,100)';
-ctx.fillRect(0, 0, forestWidth*cellSize + 2*borderWidth, forestHeight*cellSize + 2*borderWidth);
-        
 
 function startAnimating(fps) {
     fpsInterval = 1000 / fps;
@@ -55,7 +77,7 @@ function startAnimating(fps) {
 
 function animate()
 {
-
+    
     // request another frame
 
     requestAnimationFrame(animate);
