@@ -1,6 +1,5 @@
 var canvas = document.getElementById("forestfire");
 
-
 var button = document.createElement("BUTTON");
 button.id = 'button';
 var buttonText = document.createTextNode("Forest reset");
