@@ -1,0 +1,83 @@
+body {
+    padding: 0;
+    margin: 0;
+    background-color: lightskyblue;
+}
+
+.title {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    padding-top: 50px;
+    padding-bottom: 50px;
+    justify-content: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 50px;
+    color: white;
+    background-color: blue;
+}
+
+
+.main-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 50px;
+}
+
+#writer {
+    display: flex;
+    flex-basis: 33%;
+}
+
+
+.pen-options {
+    display: flex;
+    flex-basis: 33%;
+    flex-direction: column;
+    padding-top: 2rem;
+    flex-grow: 1;
+    margin-inline: 2rem;
+
+}
+
+.pen-options button {
+    padding-block: 3rem;
+    margin-bottom: 2rem;
+}
+
+.page-options {
+    display: flex;
+    flex-basis: 33%;
+    flex-direction: column;
+    padding-top: 2rem;
+    flex-grow: 1;
+    margin-inline: 2rem;
+
+}
+
+.page-options button {
+    padding-block: 3rem;
+    margin-bottom: 2rem;
+    justify-content: space-around;
+
+}
+
+
+.controls-container {
+    padding-inline: 5rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.rewrite-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loop-container {
+    display: flex;
+    align-items: center;
+}
+
