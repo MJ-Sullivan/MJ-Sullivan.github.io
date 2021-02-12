@@ -23,6 +23,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding-block: 50px;
+    touch-action: none;
 }
 
 #writer {

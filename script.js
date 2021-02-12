@@ -217,12 +217,72 @@ document.addEventListener('touchstart', event =>
     }
 });
 
+document.addEventListener('mousedown', event => 
+{
+    if (!isRewriting)
+    {
+
+        ctx.beginPath();        
+        ctx.lineWidth = selectedPenWidth;
+
+
+        let bound = canvas.getBoundingClientRect();
+
+        mouseX = event.clientX - bound.left - canvas.clientLeft;
+        mouseY = event.clientY - bound.top - canvas.clientTop;
+
+        //console.log("(", originX, ", ", originY, ") to (", mouseX, ", ", mouseY, ")");
+        
+        ctx.moveTo(mouseX, mouseY);
+        ctx.lineTo(mouseX, mouseY);
+        ctx.stroke();
+
+        storedLines.push([mouseX, mouseY, mouseX, mouseY]);
+
+        originX = mouseX;
+        originY = mouseY;
+
+        mouseHeld = true;
+    }
+});
+
 document.addEventListener('touchend', event => 
 {
     mouseHeld = false;
 });
 
+document.addEventListener('mouseup', event => 
+{
+    mouseHeld = false;
+});
+
 document.addEventListener('touchmove', event => 
+{
+    if (mouseHeld)
+    {
+        ctx.beginPath();        
+        ctx.lineWidth = selectedPenWidth;
+
+        ctx.moveTo(originX, originY);
+        let bound = canvas.getBoundingClientRect();
+
+        mouseX = event.clientX - bound.left - canvas.clientLeft;
+        mouseY = event.clientY - bound.top - canvas.clientTop;
+
+        //console.log("(", originX, ", ", originY, ") to (", mouseX, ", ", mouseY, ")");
+
+        storedLines.push([originX, originY, mouseX, mouseY]);
+
+        ctx.lineTo(mouseX, mouseY);
+        ctx.stroke();
+
+        originX = mouseX;
+        originY = mouseY;
+        
+    }
+});
+
+document.addEventListener('mousemove', event => 
 {
     if (mouseHeld)
     {
