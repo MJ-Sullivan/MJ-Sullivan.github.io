@@ -190,7 +190,8 @@ loopCheckbox.onchange = function()
 // When mouse clicked, draws line on click and sets mouseHeld to true for 'mousemove' events. 
 writer.ontouchstart = function(event) 
 {
-    console.log("TOUCH\n");
+    if (event.touches) event = event.touches[0];
+
     if (!isRewriting)
     {
 
@@ -215,7 +216,10 @@ writer.ontouchstart = function(event)
         originY = mouseY;
 
         mouseHeld = true;
+        console.log("TOUCHED\n");
     }
+    
+    return false;
 };
 
 document.addEventListener('mousedown', event => 
