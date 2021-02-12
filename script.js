@@ -194,6 +194,8 @@ document.addEventListener('touchstart', event =>
 {
     console.log("TOUCHED\n");
 
+    event = event.touches[0];
+
     if (!isRewriting)
     {
 
@@ -258,6 +260,8 @@ document.addEventListener('mousedown', event =>
 
 document.addEventListener('touchend', event => 
 {
+    event = event.touches[0];
+
     console.log("TOUCH RELEASE\n");
 
     mouseHeld = false;
@@ -273,6 +277,8 @@ document.addEventListener('mouseup', event =>
 document.addEventListener('touchmove', event => 
 {
     console.log("TOUCH MOVED\n");
+
+    event = event.touches[0];
 
     if (mouseHeld)
     {
@@ -296,6 +302,8 @@ document.addEventListener('touchmove', event =>
         originY = mouseY;
         
     }
+    console.log(mouseHeld);
+
 });
 
 document.addEventListener('mousemove', event => 
