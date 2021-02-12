@@ -193,10 +193,6 @@ loopCheckbox.onchange = function()
 document.addEventListener('touchstart', event => 
 {
     console.log("TOUCHED\n");
-    if (event.touches) 
-    {
-        event = event.touches[0];
-    }
 
     if (!isRewriting)
     {
@@ -223,6 +219,8 @@ document.addEventListener('touchstart', event =>
 
         mouseHeld = true;
     }
+
+    console.log(mouseHeld);
     
     return false;
 });
