@@ -9,6 +9,8 @@ var loopCheckbox = document.getElementById("loopCheckbox");
 
 var ctx = canvas.getContext('2d');
 
+console.log("LOADED\n");
+
 
 function mod(n, m) 
 {
@@ -268,6 +270,8 @@ document.addEventListener('mouseup', event =>
 
 document.ontouchmove = function(event) 
 {
+    console.log("TOUCH MOVED\n");
+
     if (mouseHeld)
     {
         ctx.beginPath();        
@@ -294,6 +298,9 @@ document.ontouchmove = function(event)
 
 document.addEventListener('mousemove', event => 
 {
+    console.log("MOUSE MOVED\n");
+
+
     if (mouseHeld)
     {
         ctx.beginPath();        
