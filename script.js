@@ -190,7 +190,7 @@ loopCheckbox.onchange = function()
 
 
 // When mouse clicked, draws line on click and sets mouseHeld to true for 'mousemove' events. 
-canvas.ontouchstart = function(event) 
+canvas.addEventListener('touchstart', function() 
 {
     console.log("TOUCHED\n");
     if (event.touches) 
@@ -225,7 +225,7 @@ canvas.ontouchstart = function(event)
     }
     
     return false;
-};
+});
 
 document.addEventListener('mousedown', event => 
 {
@@ -258,17 +258,17 @@ document.addEventListener('mousedown', event =>
     }
 });
 
-document.ontouchend = function(event) 
+canvas.addEventListener('touchend', function() 
 {
     mouseHeld = false;
-};
+});
 
 document.addEventListener('mouseup', event => 
 {
     mouseHeld = false;
 });
 
-document.ontouchmove = function(event) 
+canvas.addEventListener('touchmove', function() 
 {
     console.log("TOUCH MOVED\n");
 
@@ -294,12 +294,11 @@ document.ontouchmove = function(event)
         originY = mouseY;
         
     }
-};
+});
 
 document.addEventListener('mousemove', event => 
 {
     console.log("MOUSE MOVED\n");
-
 
     if (mouseHeld)
     {
