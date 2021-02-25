@@ -13,8 +13,17 @@ colourPickerImage.addEventListener('load', event =>
 {
     canvasColour.width = colourPickerImage.width;
     canvasColour.height = colourPickerImage.height;
+    
+    ctxColourPicker.fillStyle = 'rgb(100,100,100)';
+    ctxColourPicker.clearRect(0, 0, 1000, 1000)
+    
+    ctxColourPicker.fillRect(0, 0, 36, 38);
+    ctxColourPicker.fillStyle = 'rgb(135,206,250)';
+    ctxColourPicker.fillRect(2, 2, 32, 34);
     ctxColourPicker.drawImage(colourPickerImage, 0, 0);
 });
+
+
 
 // 
 var resetButton = document.getElementById("resetButton");
@@ -72,7 +81,7 @@ let selectedPenWidth = mediumPenWidth;
 
 ctx.lineWidth = selectedPenWidth;
 ctx.lineCap = "round";
-let selectedPenColour = 'rgb(100, 0, 10)';
+let selectedPenColour = 'rgb(0, 0, 0)';
 
 
 let mouseX = 0;
