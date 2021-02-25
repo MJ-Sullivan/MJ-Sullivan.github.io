@@ -1,13 +1,31 @@
-// Selects canvas element to draw on from page 
-var canvas = document.getElementById("writer");
+// Selects canvasWriter element to draw on from page 
+var canvasWriter = document.getElementById("writer");
+let canvasWriterDefaultWidth = canvasWriter.width;
 
+// Selects colour picker canvasWriter and draws colour picker image
+var canvasColour = document.getElementById("colourPickerCanvas");
+var ctxColourPicker = canvasColour.getContext('2d');
+let colourPickerImage = new Image();
+colourPickerImage.src = "colour-picker.png";
+
+
+colourPickerImage.addEventListener('load', event => 
+{
+    canvasColour.width = colourPickerImage.width;
+    canvasColour.height = colourPickerImage.height;
+    ctxColourPicker.drawImage(colourPickerImage, 0, 0);
+});
+
+// 
 var resetButton = document.getElementById("resetButton");
 var rewriteButton = document.getElementById("rewriteButton");
 var speedSlider = document.getElementById("speedSlider");
 var writeSpeedText = document.getElementById("writeSpeedText");
 var loopCheckbox = document.getElementById("loopCheckbox");
+var undoButton = document.getElementById("undoButton");
+var redoButton = document.getElementById("redoButton");
 
-var ctx = canvas.getContext('2d');
+var ctx = canvasWriter.getContext('2d');
 
 console.log("LOADED\n");
 
@@ -17,17 +35,16 @@ function mod(n, m)
     return ((n % m) + m) % m;
 }
 
+
 // Colours
-
-
 let defaultColour = 'rgb(240, 240, 240)';
 
 let selectedPageColour = defaultColour;
 
 
 ctx.fillStyle = selectedPageColour;
-ctx.fillRect(0, 0, canvas.width, canvas.height)
-ctx.fillStyle = 'rgb(0, 0, 0)';
+ctx.fillRect(0, 0, canvasWriter.width, canvasWriter.height)
+ctx.strokeStyle = 'rgb(100, 110, 10)';
 
 // Load images
 let greyLineImage = new Image();
@@ -36,6 +53,8 @@ let blueLineImage = new Image();
 blueLineImage.src = "blue-dotted-lines.png";
 let redBlueLineImage = new Image();
 redBlueLineImage.src = "red-blue-lines.png";
+let greyDottedLineImage = new Image();
+greyDottedLineImage.src = "grey-dotted-lines.png";
 
 let selectedBackground;
 
@@ -44,7 +63,7 @@ selectedBackground = redBlueLineImage;
 
 selectedBackground.onload = () => { ctx.drawImage(selectedBackground, 0, 0); };
 
-
+// Pen 
 let smallPenWidth = "5";
 let mediumPenWidth = "10";
 let largePenWidth = "20";
@@ -53,6 +72,8 @@ let selectedPenWidth = mediumPenWidth;
 
 ctx.lineWidth = selectedPenWidth;
 ctx.lineCap = "round";
+let selectedPenColour = 'rgb(100, 0, 10)';
+
 
 let mouseX = 0;
 let mouseY = 0;
@@ -65,7 +86,10 @@ let isLooping = false;
 let originX = 0;
 let originY = 0; 
 
+let currentLine = [];
 let storedLines = [];
+
+let deletedLines = [];
 
 
 let rewriteSpeed = speedSlider.value;
@@ -76,22 +100,22 @@ writeSpeedText.textContent = "Write Speed: " + speedMultiplier;
 
 function getMousePos(e)
 {
-    let bound = canvas.getBoundingClientRect();
+    let bound = canvasWriter.getBoundingClientRect();
 
-    let x = e.clientX - bound.left - canvas.clientLeft;
-    let y = e.clientY - bound.top - canvas.clientTop;
+    let x = e.clientX - bound.left - canvasWriter.clientLeft;
+    let y = e.clientY - bound.top - canvasWriter.clientTop;
 
     return [x, y];
 }
 
-function resetCanvas(ctx)
+function resetcanvasWriter(ctx)
 {
-    ctx.fillStyle = selectedPageColour;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'rgb(0, 0, 0)';
+    ctx.strokeStyle = selectedPageColour;
+    ctx.fillRect(0, 0, canvasWriter.width, canvasWriter.height);
+    ctx.strokeStyle = selectedPenColour;
     ctx.drawImage(selectedBackground, 0, 0);
     isRewriting = false;
-    storedLines = [];
+    deletedLines = [];
 }
 
 // Pen options buttons
@@ -112,23 +136,87 @@ largePenButton.onclick = function()
 backgroundButton1.onclick = function()
 {
     selectedBackground = redBlueLineImage;
-    resetCanvas(ctx);
+    resetcanvasWriter(ctx);
 }
 backgroundButton2.onclick = function()
 {
     selectedBackground = blueLineImage;
-    resetCanvas(ctx);
+    resetcanvasWriter(ctx);
 }
 backgroundButton3.onclick = function()
 {
     selectedBackground = greyLineImage;
-    resetCanvas(ctx);
+    resetcanvasWriter(ctx);
+}
+backgroundButton4.onclick = function()
+{
+    selectedBackground = greyDottedLineImage;
+    resetcanvasWriter(ctx);
 }
 
 // Bottom controls
 resetButton.onclick = function()
 {
-    resetCanvas(ctx);
+    resetcanvasWriter(ctx);
+    storedLines = [];
+}
+
+undoButton.onclick = function()
+{
+    if (!isRewriting && deletedLines.length < 100)
+    {
+        deletedLines.push(storedLines.pop());
+        console.log("Undo");
+    
+    
+        ctx.fillStyle = selectedPageColour;
+        ctx.fillRect(0, 0, canvasWriter.width, canvasWriter.height);
+        ctx.drawImage(selectedBackground, 0, 0);
+        ctx.strokeStyle = selectedPenColour;
+        ctx.lineWidth = selectedPenWidth;
+
+        for (i = 0; i < storedLines.length; i++)
+        {
+            for(j = 0; j < storedLines[i].length; j++)
+            {
+                ctx.beginPath();  
+                ctx.lineWidth = storedLines[i][j][4];
+                ctx.strokeStyle = storedLines[i][j][5];
+                ctx.moveTo(storedLines[i][j][0], storedLines[i][j][1]);
+                ctx.lineTo(storedLines[i][j][2], storedLines[i][j][3]);
+                ctx.stroke();   
+            }
+        } 
+    }
+}
+
+redoButton.onclick = function()
+{
+    if (!isRewriting && deletedLines.length != 0)
+    {
+        storedLines.push(deletedLines.pop());
+        console.log("Undo");
+    
+    
+        ctx.strokeStyle = selectedPageColour;
+        ctx.fillRect(0, 0, canvasWriter.width, canvasWriter.height);
+        ctx.drawImage(selectedBackground, 0, 0);
+        ctx.strokeStyle = selectedPenColour;
+        ctx.lineWidth = selectedPenWidth;
+
+        for (i = 0; i < storedLines.length; i++)
+        {
+            for(j = 0; j < storedLines[i].length; j++)
+            {
+                ctx.lineWidth = storedLines[i][j][4];
+                ctx.strokeStyle = storedLines[i][j][5];
+                ctx.beginPath();        
+                ctx.moveTo(storedLines[i][j][0], storedLines[i][j][1]);
+                ctx.lineTo(storedLines[i][j][2], storedLines[i][j][3]);
+                ctx.stroke();   
+            }
+        } 
+    }
 }
 
 rewriteButton.onclick = async function()
@@ -140,20 +228,25 @@ rewriteButton.onclick = async function()
         
         do 
         {
-            ctx.fillStyle = selectedPageColour;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = selectedPageColour;
+            ctx.fillRect(0, 0, canvasWriter.width, canvasWriter.height);
             ctx.drawImage(selectedBackground, 0, 0);
-            ctx.fillStyle = 'rgb(0, 0, 0)';
+            ctx.strokeStyle = selectedPenColour;
             ctx.lineWidth = selectedPenWidth;
    
             for (i = 0; i < storedLines.length; i++)
             {
-                ctx.beginPath();        
-                ctx.moveTo(storedLines[i][0], storedLines[i][1]);
-                ctx.lineTo(storedLines[i][2], storedLines[i][3]);
-                ctx.stroke();
+                for(j = 0; j < storedLines[i].length; j++)
+                {
+                    ctx.lineWidth = storedLines[i][j][4];
+                    ctx.strokeStyle = storedLines[i][j][5];
+                    ctx.beginPath();        
+                    ctx.moveTo(storedLines[i][j][0], storedLines[i][j][1]);
+                    ctx.lineTo(storedLines[i][j][2], storedLines[i][j][3]);
+                    ctx.stroke();   
             
-                await new Promise(r => setTimeout(r, 50 / speedMultiplier));
+                    await new Promise(r => setTimeout(r, 50 / speedMultiplier));
+                }
             } 
 
             if (isLooping)
@@ -167,7 +260,7 @@ rewriteButton.onclick = async function()
 }
 
 
-speedSlider.onchange = function()
+speedSlider.oninput = function()
 {
     rewriteSpeed = speedSlider.value;
     speedMultiplier = 0.1 * rewriteSpeed;
@@ -197,29 +290,30 @@ document.addEventListener('touchstart', event =>
     event = event.touches[0];
 
     if (!isRewriting)
-    {
+    {        
+        let bound = canvasWriter.getBoundingClientRect();
+        mouseX = event.clientX - bound.left - canvasWriter.clientLeft;
+        mouseY = event.clientY - bound.top - canvasWriter.clientTop;
 
-        ctx.beginPath();        
-        ctx.lineWidth = selectedPenWidth;
+        if (mouseX > 0 && mouseX < canvasWriter.width && mouseY > 0 && mouseY < canvasWriter.height)
+        {
+            deletedLines = [];
 
+            ctx.strokeStyle = selectedPenColour;
+            ctx.beginPath();        
+            ctx.lineWidth = selectedPenWidth;
 
-        let bound = canvas.getBoundingClientRect();
+            ctx.moveTo(mouseX, mouseY);
+            ctx.lineTo(mouseX, mouseY);
+            ctx.stroke();
 
-        mouseX = event.clientX - bound.left - canvas.clientLeft;
-        mouseY = event.clientY - bound.top - canvas.clientTop;
+            currentLine.push([mouseX, mouseY, mouseX, mouseY, selectedPenWidth, selectedPenColour]);
 
-        //console.log("(", originX, ", ", originY, ") to (", mouseX, ", ", mouseY, ")");
-        
-        ctx.moveTo(mouseX, mouseY);
-        ctx.lineTo(mouseX, mouseY);
-        ctx.stroke();
+            originX = mouseX;
+            originY = mouseY;
 
-        storedLines.push([mouseX, mouseY, mouseX, mouseY]);
-
-        originX = mouseX;
-        originY = mouseY;
-
-        mouseHeld = true;
+            mouseHeld = true;
+        }
     }
 
     console.log(mouseHeld);
@@ -231,69 +325,77 @@ document.addEventListener('mousedown', event =>
 {
     console.log("CLICKED\n");
 
+    
     if (!isRewriting)
-    {
+    {        
+        let bound = canvasWriter.getBoundingClientRect();
+        mouseX = event.clientX - bound.left - canvasWriter.clientLeft;
+        mouseY = event.clientY - bound.top - canvasWriter.clientTop;
 
-        ctx.beginPath();        
-        ctx.lineWidth = selectedPenWidth;
+        if (mouseX > 0 && mouseX < canvasWriter.width && mouseY > 0 && mouseY < canvasWriter.height)
+        {
+            deletedLines = [];
 
+            ctx.beginPath();   
+            ctx.strokeStyle = selectedPenColour;
+     
+            ctx.lineWidth = selectedPenWidth;
 
-        let bound = canvas.getBoundingClientRect();
+            ctx.moveTo(mouseX, mouseY);
+            ctx.lineTo(mouseX, mouseY);
+            ctx.stroke();
 
-        mouseX = event.clientX - bound.left - canvas.clientLeft;
-        mouseY = event.clientY - bound.top - canvas.clientTop;
+            currentLine.push([mouseX, mouseY, mouseX, mouseY, selectedPenWidth, selectedPenColour]);
 
-        //console.log("(", originX, ", ", originY, ") to (", mouseX, ", ", mouseY, ")");
-        
-        ctx.moveTo(mouseX, mouseY);
-        ctx.lineTo(mouseX, mouseY);
-        ctx.stroke();
+            originX = mouseX;
+            originY = mouseY;
 
-        storedLines.push([mouseX, mouseY, mouseX, mouseY]);
-
-        originX = mouseX;
-        originY = mouseY;
-
-        mouseHeld = true;
+            mouseHeld = true;
+        }
     }
 });
 
 document.addEventListener('touchend', event => 
 {
+    if (mouseHeld)
+    {
     event = event.touches[0];
-
-    console.log("TOUCH RELEASE\n");
-
+    storedLines.push(currentLine.slice());
+    currentLine = [];
     mouseHeld = false;
+    }
 });
 
 document.addEventListener('mouseup', event => 
 {
-    console.log("MOUSE UP\n");
-
-    mouseHeld = false;
+    if (mouseHeld)
+    {
+        storedLines.push(currentLine.slice());
+        currentLine = [];
+        mouseHeld = false;
+    }
 });
 
 document.addEventListener('touchmove', event => 
 {
-    console.log("TOUCH MOVED\n");
 
     event = event.touches[0];
 
     if (mouseHeld)
     {
+        console.log("TOUCH MOVED\n");
         ctx.beginPath();        
         ctx.lineWidth = selectedPenWidth;
-
+        ctx.strokeStyle = selectedPenColour;
         ctx.moveTo(originX, originY);
-        let bound = canvas.getBoundingClientRect();
+        let bound = canvasWriter.getBoundingClientRect();
 
-        mouseX = event.clientX - bound.left - canvas.clientLeft;
-        mouseY = event.clientY - bound.top - canvas.clientTop;
+        mouseX = event.clientX - bound.left - canvasWriter.clientLeft;
+        mouseY = event.clientY - bound.top - canvasWriter.clientTop;
 
         //console.log("(", originX, ", ", originY, ") to (", mouseX, ", ", mouseY, ")");
 
-        storedLines.push([originX, originY, mouseX, mouseY]);
+        currentLine.push([originX, originY, mouseX, mouseY, selectedPenWidth, selectedPenColour]);
 
         ctx.lineTo(mouseX, mouseY);
         ctx.stroke();
@@ -302,28 +404,29 @@ document.addEventListener('touchmove', event =>
         originY = mouseY;
         
     }
-    console.log(mouseHeld);
-
 });
 
 document.addEventListener('mousemove', event => 
 {
-    console.log("MOUSE MOVED\n");
 
     if (mouseHeld)
     {
+        console.log("MOUSE MOVED\n");
+
+
+        ctx.strokeStyle = selectedPenColour;
         ctx.beginPath();        
         ctx.lineWidth = selectedPenWidth;
 
         ctx.moveTo(originX, originY);
-        let bound = canvas.getBoundingClientRect();
+        let bound = canvasWriter.getBoundingClientRect();
 
-        mouseX = event.clientX - bound.left - canvas.clientLeft;
-        mouseY = event.clientY - bound.top - canvas.clientTop;
+        mouseX = event.clientX - bound.left - canvasWriter.clientLeft;
+        mouseY = event.clientY - bound.top - canvasWriter.clientTop;
 
         //console.log("(", originX, ", ", originY, ") to (", mouseX, ", ", mouseY, ")");
 
-        storedLines.push([originX, originY, mouseX, mouseY]);
+        currentLine.push([originX, originY, mouseX, mouseY, selectedPenWidth, selectedPenColour]);
 
         ctx.lineTo(mouseX, mouseY);
         ctx.stroke();
@@ -332,4 +435,22 @@ document.addEventListener('mousemove', event =>
         originY = mouseY;
         
     }
+});
+
+// Colour picker click
+colourPickerCanvas.addEventListener('mousedown', event => 
+{
+    let pickedColour = ctxColourPicker.getImageData(event.offsetX, event.offsetY, 1, 1).data;
+    if (pickedColour.length != 0)
+    {
+        selectedPenColour = 'rgb(' + pickedColour[0] + ',' + pickedColour[1] +  ',' + pickedColour[2] + ')'; 
+        console.log(selectedPenColour);
+    }
+    ctxColourPicker.fillStyle = 'rgb(100,100,100)';
+    ctxColourPicker.clearRect(0, 0, 1000, 1000)
+    
+    ctxColourPicker.fillRect(Math.floor(event.offsetX/36) * 36, 0, 36, 38);
+    ctxColourPicker.fillStyle = 'rgb(135,206,250)';
+    ctxColourPicker.fillRect(Math.floor(event.offsetX/36) * 36 + 2, 2, 32, 34);
+    ctxColourPicker.drawImage(colourPickerImage, 0, 0);
 });
