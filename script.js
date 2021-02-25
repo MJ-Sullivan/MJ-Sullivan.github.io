@@ -137,21 +137,25 @@ backgroundButton1.onclick = function()
 {
     selectedBackground = redBlueLineImage;
     resetcanvasWriter(ctx);
+    storedLines = [];
 }
 backgroundButton2.onclick = function()
 {
     selectedBackground = blueLineImage;
     resetcanvasWriter(ctx);
+    storedLines = [];
 }
 backgroundButton3.onclick = function()
 {
     selectedBackground = greyLineImage;
     resetcanvasWriter(ctx);
+    storedLines = [];
 }
 backgroundButton4.onclick = function()
 {
     selectedBackground = greyDottedLineImage;
     resetcanvasWriter(ctx);
+    storedLines = [];
 }
 
 // Bottom controls
