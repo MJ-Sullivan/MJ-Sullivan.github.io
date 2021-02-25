@@ -285,8 +285,6 @@ loopCheckbox.onchange = function()
 // When mouse clicked, draws line on click and sets mouseHeld to true for 'mousemove' events. 
 document.addEventListener('touchstart', event => 
 {
-    console.log("TOUCHED\n");
-
     event = event.touches[0];
 
     if (!isRewriting)
@@ -315,17 +313,12 @@ document.addEventListener('touchstart', event =>
             mouseHeld = true;
         }
     }
-
-    console.log(mouseHeld);
     
     return false;
 });
 
 document.addEventListener('mousedown', event => 
-{
-    console.log("CLICKED\n");
-
-    
+{   
     if (!isRewriting)
     {        
         let bound = canvasWriter.getBoundingClientRect();
@@ -383,7 +376,6 @@ document.addEventListener('touchmove', event =>
 
     if (mouseHeld)
     {
-        console.log("TOUCH MOVED\n");
         ctx.beginPath();        
         ctx.lineWidth = selectedPenWidth;
         ctx.strokeStyle = selectedPenColour;
@@ -411,9 +403,6 @@ document.addEventListener('mousemove', event =>
 
     if (mouseHeld)
     {
-        console.log("MOUSE MOVED\n");
-
-
         ctx.strokeStyle = selectedPenColour;
         ctx.beginPath();        
         ctx.lineWidth = selectedPenWidth;
@@ -440,6 +429,25 @@ document.addEventListener('mousemove', event =>
 // Colour picker click
 colourPickerCanvas.addEventListener('mousedown', event => 
 {
+    let pickedColour = ctxColourPicker.getImageData(event.offsetX, event.offsetY, 1, 1).data;
+    if (pickedColour.length != 0)
+    {
+        selectedPenColour = 'rgb(' + pickedColour[0] + ',' + pickedColour[1] +  ',' + pickedColour[2] + ')'; 
+        console.log(selectedPenColour);
+    }
+    ctxColourPicker.fillStyle = 'rgb(100,100,100)';
+    ctxColourPicker.clearRect(0, 0, 1000, 1000)
+    
+    ctxColourPicker.fillRect(Math.floor(event.offsetX/36) * 36, 0, 36, 38);
+    ctxColourPicker.fillStyle = 'rgb(135,206,250)';
+    ctxColourPicker.fillRect(Math.floor(event.offsetX/36) * 36 + 2, 2, 32, 34);
+    ctxColourPicker.drawImage(colourPickerImage, 0, 0);
+});
+
+colourPickerCanvas.addEventListener('touchstart', event => 
+{
+    event = event.touches[0];
+
     let pickedColour = ctxColourPicker.getImageData(event.offsetX, event.offsetY, 1, 1).data;
     if (pickedColour.length != 0)
     {
