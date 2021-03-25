@@ -211,30 +211,23 @@ function startAnimating(fps) {
 
 function animate()
 {
-    // request another frame
+    // Request another frame
     requestAnimationFrame(animate);
 
-    // calc elapsed time since last loop
+    // Calc elapsed time since last loop
     now = Date.now();
     elapsed = now - then;
 
-    // if enough time has elapsed, draw the next frame
+    // If enough time has elapsed, draw the next frame
     if (elapsed > fpsInterval) {
 
-        // Get ready for next frame by setting then=now, but also adjust for your
-        // specified fpsInterval not being a multiple of RAF's interval (16.7ms)
+        
         then = now - (elapsed % fpsInterval);
 
-        //
-        // Put dynamics code here
-        //
+        // Dynamics update
         update();
 
-        //
-        // Put your drawing code here
-        //
-
-      
+        
         // Draw rink
         ctx.beginPath();
         ctx.fillStyle = 'rgb(255,255,255)';
