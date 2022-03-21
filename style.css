@@ -20,7 +20,7 @@ body {
 
 
 .main-container {
-    padding-top: 100px;
+    padding-top: 10px;
     display: flex;
     touch-action: none;
     justify-content: center;

@@ -1,206 +1,190 @@
-var canvas = document.getElementById("canvas");
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight);
+camera.position.x = 5
+camera.position.z = 10
+camera.position.y = 0.5
+var renderer = new THREE.WebGL1Renderer({antialias: true});
 
-var ctx = canvas.getContext('2d', { alpha: false });
+renderer.setSize(0.8 * window.innerWidth, 0.8 * window.innerHeight);
+renderer.setClearColor(0x8AAFF3, 1);
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = true;
 
-ctx.fillStyle = 'rgb(0,0,0)';
+var container = document.getElementById("main");
+container.appendChild(renderer.domElement);
 
-
-// Initialise puck values
-let puckSpawnPos = [canvas.width / 2, canvas.height / 2 ];
-let puckPos = puckSpawnPos.slice();
-let puckPosOld = puckPos.slice();
-
-let puckVel = [0, 0];
-
-let puckRadius = 15;
-let puckSpeedLimit = 300;
-let isPuckScoring = false;
-
-// Initialise player values
-let playerPos = [80, canvas.height / 2];
-let playerPosNew = playerPos.slice();
-let playerVel = [0, 0];
-let playerRadius = 30;
+var controls = new THREE.PointerLockControls(camera, renderer.domElement);
 
 
-let playerTargetPos = playerPos.slice();
-let playerSpeedLimit = 10;
+window.addEventListener('keydown', onKeyDown);
+window.addEventListener('keyup', onKeyUp);
 
-// Initialise AI values
-let aiSpawnPos = [canvas.width - 80, canvas.height / 2];
-let aiPos = aiSpawnPos.slice();
-let aiVel = [0, 0];
-let aiRadius = 30;
+renderer.domElement.addEventListener(
+    'click',
+    function () {
+        controls.lock()
+    },
+    false
+)
 
+var stop = false;
+var frameCount = 0;
+var fps, fpsInterval, startTime, now, then, elapsed;
 
-let aiTargetPos = aiPos.slice();
-let aiSpeedLimit = 10;
+let wHeld = false;
+let sHeld = false;
+let aHeld = false;
+let dHeld = false;
 
-// Rink properties
-let pitchCircleRadius = 70;
-let pitchLineWidth = 2;
-let goalWidth = 120;
+let upHeld = false;
+let downHeld = false;
+let leftHeld = false;
+let rightHeld = false;
 
-// Objective properties
-let playerScoreText = "Score: ";
-let playerScore = 0;
+let iHeld = false;
+let kHeld = false;
 
-let aiScoreText = "Score: ";
-let aiScore = 0;
+let pHeld = false;
+ 
+let moveIncrement = 0.1;
 
+let isPaused = false;
 
-
-let dt = 0.1;
-
-let mouseHeld = false;
-
-canvas.addEventListener('mousedown', function(event) {
-    mouseHeld = true;
-    playerTargetPos[0] = event.clientX - canvas.offsetLeft - canvas.clientLeft;
-    playerTargetPos[1] = event.clientY - canvas.offsetTop - canvas.clientTop;
-}, false);
-
-canvas.addEventListener('mouseup', function(event) {
-    mouseHeld = false;
-}, false);
-
-canvas.addEventListener('mousemove', function(event) {
-    if (mouseHeld)
-    {
-        playerTargetPos[0] = event.clientX - canvas.offsetLeft - canvas.clientLeft;
-        playerTargetPos[1] = event.clientY - canvas.offsetTop - canvas.clientTop;
-    }
-}, false);
-
-function update()
+function onKeyDown(e)
 {
-    // Update player striker velocity
-    playerVel = [playerTargetPos[0] - playerPos[0], playerTargetPos[1] - playerPos[1]];
-
-
-    // Update ai striker
-    if (puckPos[0] > canvas.width / 2)
-    { 
-        aiTargetPos = [puckPos[0], puckPos[1]];
-        aiVel = [(aiTargetPos[0] - aiPos[0]) * 0.3, (aiTargetPos[1] - aiPos[1]) * 0.8];
+    console.log(e.code);
+    switch (e.code) {
+        case "KeyP":
+            if (!pHeld)
+            {
+                isPaused = !isPaused;
+                console.log(plight.position.x, ", ", plight.position.y, ", ", plight.position.z)
+                controls.unlock();
+            }
+            pHeld = true;
+            break;
+        case "KeyW":
+            wHeld = true;
+            break;
+        case "KeyS":
+            sHeld = true;
+            break;
+        case "KeyA":
+            aHeld = true;
+            break;
+        case "KeyD":
+            dHeld = true;
+            break;
+        case "ArrowUp":
+            upHeld = true;
+            break;
+        case "ArrowDown":
+            downHeld = true;
+            break;
+        case "ArrowLeft":
+            leftHeld = true;
+            break;
+        case "ArrowRight":
+            rightHeld = true;
+            break;
+        case "KeyI":
+            iHeld = true;
+            break;
+        case "KeyK":
+            kHeld = true;
+            break;
     }
-
-    else if (puckPos[0] <= canvas.width / 2 || (puckVel[0] < 0 && puckPos[0] < canvas.width * 0.75))
-    {
-        aiTargetPos = aiSpawnPos.slice();
-        aiVel = [(aiTargetPos[0] - aiPos[0]) * 0.5, (aiTargetPos[1] - aiPos[1]) * 0.5];
-    }
-    
-
-    // Detects wall/goal collision
-    if (!isPuckScoring)
-    {
-        if ((puckPos[0] + puckRadius > canvas.width || puckPos[0] - puckRadius < 0) && ((puckPos[1] - puckRadius) < (canvas.height / 2 - goalWidth / 2) || (puckPos[1] + puckRadius) > (canvas.height / 2 + goalWidth / 2)))
-        {
-            puckVel[0] *= -1;
-            puckPos = puckPosOld.slice();
-        }
-    }
-    if (puckPos[1] + puckRadius > canvas.height || puckPos[1] - puckRadius < 0)
-    {
-        puckVel[1] *= -1;
-        puckPos = puckPosOld;
-    }
-
-    if (puckPos[0] <= 0)
-    {
-        aiScore++;
-        isPuckScoring = true;
-        resetPuck();
-    }
-
-    if (puckPos[0] >= canvas.width)
-    {
-        playerScore++;
-        isPuckScoring = true;
-        resetPuck();
-    }
-
-    // Detects player collision
-    
-    if (Math.pow(puckPos[0] - playerPos[0], 2) + Math.pow(puckPos[1] - playerPos[1], 2) <= Math.pow(playerRadius + puckRadius, 2))
-    {
-        console.log("COLLIDED");
-
-        // Gives puck new velocity
-        puckVel = playerCollision(puckPos, playerPos, puckVel, playerVel);
-        playerVel = [-puckVel[0] / 2, -puckVel[1] / 2]
-
-        // Puts puck outside of player striker.
-        let centerDistance = Math.sqrt(Math.pow(puckPos[0] - playerPos[0], 2) + Math.pow(puckPos[1] - playerPos[1], 2));
-        let collisionAngle = Math.atan2(puckPos[1] - playerPos[1], puckPos[0] - playerPos[0]);
-        puckPos[0] += ((puckRadius + playerRadius) - centerDistance) * Math.cos(collisionAngle);
-        puckPos[1] += ((puckRadius + playerRadius) - centerDistance) * Math.sin(collisionAngle);
-
-        // Enforces speed limit
-        if (Math.pow(puckVel[0], 2) + Math.pow(puckVel[1], 2) > Math.pow(puckSpeedLimit, 2))
-        {
-            let scaleFactor = Math.sqrt(Math.pow(puckVel[0], 2) + Math.pow(puckVel[1], 2)) / puckSpeedLimit;
-            puckVel[0] /= scaleFactor;
-            puckVel[1] /= scaleFactor;
-        }
-    }
-    else {
-        console.log("not collided");
-    }
-    // Detects ai collision
-    if (Math.pow(puckPos[0] - aiPos[0], 2) + Math.pow(puckPos[1] - aiPos[1], 2) <= Math.pow(aiRadius + puckRadius, 2))
-    {
-        // Gives puck new velocity
-        puckVel = playerCollision(puckPos, aiPos, puckVel, aiVel);
-        aiVel = [-puckVel[0] / 2, -puckVel[1] / 2];
-
-        // Puts puck outside of ai striker.
-        let centerDistance = Math.sqrt(Math.pow(puckPos[0] - aiPos[0], 2) + Math.pow(puckPos[1] - aiPos[1], 2));
-        let collisionAngle = Math.atan2(puckPos[1] - aiPos[1], puckPos[0] - aiPos[0]);
-        puckPos[0] += ((puckRadius + aiRadius) - centerDistance) * Math.cos(collisionAngle);
-        puckPos[1] += ((puckRadius + aiRadius) - centerDistance) * Math.sin(collisionAngle);
-
-        
-        // Enforces speed limit
-        if (Math.pow(puckVel[0], 2) + Math.pow(puckVel[1], 2) > Math.pow(puckSpeedLimit, 2))
-        {
-            let scaleFactor = Math.sqrt(Math.pow(puckVel[0], 2) + Math.pow(puckVel[1], 2)) / puckSpeedLimit;
-            puckVel[0] /= scaleFactor;
-            puckVel[1] /= scaleFactor;
-        }
-    }
-
-    // Update puck
-    puckPosOld = puckPos.slice();
-
-    puckPos[0] += puckVel[0] * dt ;
-    puckPos[1] += puckVel[1] * dt;
-
-    if (puckPos[1] > canvas.width)
-    {
-        aiPos = aiSpawnPos.slice();
-        puckPos = puckSpawnPos.slice();
-    }
-
-    puckVel[0] *= 0.995;
-    puckVel[1] *= 0.995;
-
-    // Update player position
-    playerPos[0] += playerVel[0] * dt;
-    playerPos[1] += playerVel[1] * dt;
-
-    if (playerPos[0] > canvas.width / 2)
-    {
-        playerPos[0] = canvas.width / 2;
-    }
-
-    // Update ai position
-    aiPos[0] += aiVel[0] * dt;
-    aiPos[1] += aiVel[1] * dt;
 }
 
-startAnimating(60);
+function onKeyUp(e)
+{
+    switch (e.code) {
+        case "KeyP":
+            pHeld = false;
+            break;
+        case "KeyW":
+            wHeld = false;
+            break;
+        case "KeyS":
+            sHeld = false;
+            break;
+        case "KeyA":
+            aHeld = false;
+            break;
+        case "KeyD":
+            dHeld = false;
+            break;
+        case "ArrowUp":
+            upHeld = false;
+            break;
+        case "ArrowDown":
+            downHeld = false;
+            break;
+        case "ArrowLeft":
+            leftHeld = false;
+            break;
+        case "ArrowRight":
+            rightHeld = false;
+            break;
+        case "KeyI":
+            iHeld = false;
+            break;
+        case "KeyK":
+            kHeld = false;
+            break;
+    }
+}
+
+var plight = new THREE.PointLight( 0xfffde6, 1, 100);
+plight.position.set(1.3, 1.5, 1);
+plight.castShadow = true;
+
+plight.shadow.mapSize.width = 1024; // default
+plight.shadow.mapSize.height = 1024; // default
+
+plight.shadow.bias = -0.001;
+scene.add(plight);
+
+var alight = new THREE.AmbientLight(0xe6ffff, 1)
+scene.add(alight)
+
+const plightHelper = new THREE.PointLightHelper(plight, 0.1);
+scene.add(plightHelper);
+
+// var alight = new THREE.AmbientLight(0xffffff, 3);
+// scene.add(alight);
+
+let objects = {};
+var material = new THREE.MeshPhongMaterial({ color: 0xeeeeee });
+var loader = new THREE.GLTFLoader();
+var dloader = new THREE.DRACOLoader();
+dloader.setDecoderPath( './node_modules/three/examples/js/libs/draco/' );
+loader.setDRACOLoader(dloader);
+addObject("room", "room.gltf", new THREE.Vector3(0, -2.3, 0));
+//addObject("room", "cube.gltf", new THREE.Vector3(0, -0, 0));
+addObject("floor", "floor.gltf", new THREE.Vector3(0, -2, 0));
+
+
+
+async function addObject(name, file, position)
+{
+        const geom = await new Promise(resolve => {
+            loader.load(file, geometry => {
+                resolve(geometry);
+            })})
+            geom.scene.traverse( function( node ) {
+
+                if ( node.isMesh ) { 
+                    node.castShadow = true; 
+                    node.receiveShadow = true;
+                }
+        
+            } );
+            
+            scene.add(geom.scene);
+            geom.scene.position.set(position.x, position.y, position.z);
+}
+
 
 function startAnimating(fps) {
     fpsInterval = 1000 / fps;
@@ -209,213 +193,83 @@ function startAnimating(fps) {
     animate();
 }
 
-function animate()
-{
-    // Request another frame
-    requestAnimationFrame(animate);
+var animate = function() {
+     // request another frame
 
-    // Calc elapsed time since last loop
-    now = Date.now();
-    elapsed = now - then;
+     requestAnimationFrame(animate);
 
-    // If enough time has elapsed, draw the next frame
-    if (elapsed > fpsInterval) {
-
+     // calc elapsed time since last loop
+ 
+     now = Date.now();
+     elapsed = now - then;
+ 
+     // if enough time has elapsed, draw the next frame
+ 
+     if (elapsed > fpsInterval) {
+ 
+         // Get ready for next frame by setting then=now, but also adjust for your
+         // specified fpsInterval not being a multiple of RAF's interval (16.7ms)
+         then = now - (elapsed % fpsInterval);
         
-        then = now - (elapsed % fpsInterval);
 
-        // Dynamics update
-        update();
+         if (wHeld)
+         {
+             controls.moveForward(moveIncrement);
+         }
+         if (sHeld)
+         {
+             controls.moveForward(-moveIncrement);
+         }
+         if (aHeld)
+         {
+             controls.moveRight(-moveIncrement);
+         }
+         if (dHeld)
+         {
+             controls.moveRight(moveIncrement);
+         }
+     
+         if (upHeld)
+         {
+             plight.position.y += moveIncrement;
+         }
+         if (downHeld)
+         {
+             plight.position.y -= moveIncrement;
+         }
+         if (leftHeld)
+         {
+             plight.position.z += moveIncrement;
+         }
+         if (rightHeld)
+         {
+             plight.position.z -= moveIncrement;
+         }
+         if (iHeld)
+         {
+            plight.position.x += moveIncrement;
+         }
+         if (kHeld)
+         {
+            plight.position.x -= moveIncrement;
+         }
 
-        
-        // Draw rink
-        ctx.beginPath();
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fill();
+         // Put your drawing code here
+         renderer.render(scene, camera);
+     }
 
-        // Goals
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.fillRect(0, canvas.height / 2 - goalWidth / 2, 50, goalWidth);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.beginPath();
-        ctx.fillRect(0 + pitchLineWidth, canvas.height / 2 - goalWidth / 2 + pitchLineWidth, 50 - pitchLineWidth * 2, goalWidth - pitchLineWidth * 2);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.fillRect(canvas.width - 50, canvas.height / 2 - goalWidth / 2, 50, goalWidth);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.beginPath();
-        ctx.fillRect(canvas.width - 50 + pitchLineWidth, canvas.height / 2 - goalWidth / 2 + pitchLineWidth, 50 - pitchLineWidth * 2, goalWidth - pitchLineWidth * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.fillRect(20, 0, canvas.width -  2 * 20, canvas.height);
-        ctx.fill();
-
-        // Left circle
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.arc(20 + pitchLineWidth / 2, canvas.height / 2, pitchCircleRadius, Math.PI * 1.5 , 0.5 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.beginPath();
-        ctx.arc(20 + pitchLineWidth / 2, canvas.height / 2, pitchCircleRadius - pitchLineWidth, Math.PI * 1.5, 0.5 * Math.PI);
-        ctx.fill();
-
-        // Right circle
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.arc(canvas.width - 20 - pitchLineWidth / 2, canvas.height / 2, pitchCircleRadius, 0.5 * Math.PI, 1.5 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.beginPath();
-        ctx.arc(canvas.width - 20 - pitchLineWidth / 2, canvas.height / 2, pitchCircleRadius - pitchLineWidth, 0.5 * Math.PI, 1.5 * Math.PI);
-        ctx.fill();
-
-        // Middle circle
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, pitchCircleRadius, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, pitchCircleRadius - pitchLineWidth, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, pitchCircleRadius / 2, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(255,255,255)';
-        ctx.beginPath();
-        ctx.arc(canvas.width / 2, canvas.height / 2, pitchCircleRadius / 2 - pitchLineWidth, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Middle line
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.fillRect(canvas.width / 2 - pitchLineWidth / 2, 0, pitchLineWidth, canvas.height);
-        ctx.fill();
-
-        // Parallel lines inner
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.fillRect(canvas.width / 2 - pitchLineWidth / 2 - canvas.width / 5, 0, pitchLineWidth, canvas.height);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.fillRect(canvas.width / 2 - pitchLineWidth / 2 + canvas.width / 5, 0, pitchLineWidth, canvas.height);
-        ctx.fill();
-        
-        // Parallel lines outer
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.fillRect(20 - pitchLineWidth / 2, 0, pitchLineWidth, canvas.height);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(255,0,0)';
-        ctx.beginPath();
-        ctx.fillRect(canvas.width - pitchLineWidth / 2 - 20, 0, pitchLineWidth, canvas.height);
-        ctx.fill();
-        
-        // Draw score texts
-        ctx.font = "20px Arial";
-        ctx.fillStyle = 'rgb(100, 0, 0)';
-        ctx.fillText(playerScoreText + playerScore, 80, 30);
-        ctx.fillStyle = 'rgb(0, 0, 100)';
-        ctx.fillText(aiScoreText + aiScore, canvas.width - ctx.measureText(playerScoreText + playerScore).width - 80, 30);
-
-        // Draw player striker
-        ctx.fillStyle = 'rgb(200, 0, 0)';
-        ctx.beginPath();
-        ctx.arc(playerPos[0], playerPos[1], playerRadius, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(150, 0, 0)';
-        ctx.beginPath();
-        ctx.arc(playerPos[0], playerPos[1], playerRadius * 0.8, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(200, 0, 0)';
-        ctx.beginPath();
-        ctx.arc(playerPos[0], playerPos[1], playerRadius / 2, 0, 2 * Math.PI);
-        ctx.fill();
-
-
-        // Draw ai striker
-        ctx.fillStyle = 'rgb(0, 0, 200)';
-        ctx.beginPath();
-        ctx.arc(aiPos[0], aiPos[1], aiRadius, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(0, 0, 150)';
-        ctx.beginPath();
-        ctx.arc(aiPos[0], aiPos[1], aiRadius * 0.8, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.fillStyle = 'rgb(0, 0, 200)';
-        ctx.beginPath();
-        ctx.arc(aiPos[0], aiPos[1], aiRadius / 2, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Draw puck
-        ctx.fillStyle = 'rgb(20,20,20)';
-        ctx.beginPath();
-        ctx.arc(puckPos[0], puckPos[1], puckRadius, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = 'rgb(40,40, 40)';
-        ctx.beginPath();
-        ctx.arc(puckPos[0], puckPos[1], puckRadius * 0.8, 0, 2 * Math.PI);
-        ctx.fill();
-    }    
+    
 }
 
-// Calculates velocity after puck collides with player !!FIX!!
-function playerCollision(puckPos, playerPos, puckVel, playerVel)
-{
-    let relVel = [puckVel[0] - playerVel[0], puckVel[1] - playerVel[1]];
+window.addEventListener( 'resize', onWindowResize);
 
-    let relSpeed = Math.sqrt(Math.pow(relVel[0], 2) + Math.pow(relVel[1], 2));
 
-    let bisectVector = [puckPos[0] - playerPos[0], puckPos[1] - playerPos[1]];
-    
-    let tangentVector = [-bisectVector[1], bisectVector[0]];
-    let tangentVectorMag = Math.sqrt(Math.pow(tangentVector[0], 2) + Math.pow(tangentVector[1], 2));
+function onWindowResize() {
 
-    let tangentVectorNormalised = [tangentVector[0] / tangentVectorMag, tangentVector[1] / tangentVectorMag];
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize( 0.8 * window.innerWidth, 0.8 * window.innerHeight );
 
-    let dotProduct = tangentVectorNormalised[0] * relVel[0] + tangentVectorNormalised[1] * relVel[1];
-
-    let projectionVec = [tangentVectorNormalised[0] * dotProduct, tangentVectorNormalised[1] * dotProduct];
-
-    let perpVec = [relVel[0] - projectionVec[0], relVel[1] - projectionVec[1]];
-
-    let returnVector = relVel.slice();
-
-    returnVector[0] -= 2 * perpVec[0];
-    returnVector[1] -= 2 * perpVec[1];
-
-    let returnVectorMag = Math.sqrt(Math.pow(returnVector[0], 2) + Math.pow(returnVector[1], 2));
-
-    returnVector[0] /= returnVectorMag;
-    returnVector[1] /= returnVectorMag;
-    
-    returnVector[0] *= relSpeed;
-    returnVector[1] *= relSpeed;
-    
-    return returnVector;
 }
 
-function resetPuck()
-{
-    puckPos = [canvas.width / 2, canvas.height / 2];
-    puckVel = [0, 0];
-    isPuckScoring = false;
-}
+startAnimating(60);
