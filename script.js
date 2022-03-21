@@ -158,11 +158,11 @@ let objects = {};
 var material = new THREE.MeshPhongMaterial({ color: 0xeeeeee });
 var loader = new THREE.GLTFLoader();
 var dloader = new THREE.DRACOLoader();
-dloader.setDecoderPath( './node_modules/three/examples/js/libs/draco/' );
+dloader.setDecoderPath( '/node_modules/three/examples/js/libs/draco/' );
 loader.setDRACOLoader(dloader);
-addObject("room", "room.gltf", new THREE.Vector3(0, -2.3, 0));
+addObject("room", "/room.gltf", new THREE.Vector3(0, -2.3, 0));
 //addObject("room", "cube.gltf", new THREE.Vector3(0, -0, 0));
-addObject("floor", "floor.gltf", new THREE.Vector3(0, -2, 0));
+addObject("floor", "/floor.gltf", new THREE.Vector3(0, -2, 0));
 
 
 
