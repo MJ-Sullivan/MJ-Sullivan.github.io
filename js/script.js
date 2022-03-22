@@ -145,6 +145,16 @@ plight.shadow.mapSize.height = 1024; // default
 plight.shadow.bias = -0.001;
 scene.add(plight);
 
+var plight2 = new THREE.PointLight( 0xfffde6, 1, 100);
+plight2.position.set(10, 1.5, 7);
+plight2.castShadow = true;
+
+plight2.shadow.mapSize.width = 1024; // default
+plight2.shadow.mapSize.height = 1024; // default
+
+plight2.shadow.bias = -0.001;
+scene.add(plight2);
+
 var alight = new THREE.AmbientLight(0xe6ffff, 1)
 scene.add(alight)
 
@@ -161,9 +171,8 @@ var dloader = new THREE.DRACOLoader();
 dloader.setDecoderPath( 'js/libs/draco/' );
 loader.setDRACOLoader(dloader);
 addObject("room", "room.gltf", new THREE.Vector3(0, -2.3, 0));
-//addObject("room", "cube.gltf", new THREE.Vector3(0, -0, 0));
+addObject("cube", "batcube.gltf", new THREE.Vector3(10, -0, 0));
 addObject("floor", "floor.gltf", new THREE.Vector3(0, -2, 0));
-
 
 
 async function addObject(name, file, position)
@@ -180,6 +189,18 @@ async function addObject(name, file, position)
                 }
         
             } );
+            if (name === "cube")
+            {
+                const vidTex = new THREE.VideoTexture(document.getElementById('video'));
+                vidTex.flipY = false;
+                const videoMat = new THREE.MeshBasicMaterial( {map: vidTex, side: THREE.DoubleSide, toneMapped: false});
+                geom.scene.traverse(child => {
+                    if (child.material) {
+                      child.material = videoMat;
+                    }
+                  });
+                  document.getElementById('video').play()
+            }
             
             scene.add(geom.scene);
             geom.scene.position.set(position.x, position.y, position.z);

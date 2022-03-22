@@ -3,9 +3,6 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv='cache-control' content='no-cache'> 
-    <meta http-equiv='expires' content='0'> 
-    <meta http-equiv='pragma' content='no-cache'>
     <title>Test Environment</title>
     <link rel="stylesheet" href="style.css">
   </head>
@@ -15,17 +12,18 @@
     <h1 class="title">Test Environment</h1>
 
     <div class="main-container" id="main">
-      
+      <video id="video" playsinline webkit-playsinline muted loop autoplay width="320" height="240" src="batman.mp4" style="display: none;"></video>
+    
+      <script src="js/three.js"></script>
+      <script src="js/PointerLockControls.js"></script>
+      <script src="js/GLTFLoader.js"></script>
+      <script src="js/DRACOLoader.js"></script>
+      <script src="js/script.js"></script>
     </div>
 
     <div class="controls-container">
       
     </div>
-    <script src="js/three.js"></script>
-    <script src="js/PointerLockControls.js"></script>
-    <script src="js/GLTFLoader.js"></script>
-    <script src="js/DRACOLoader.js"></script>
-    <script src="js/script.js"></script>
   </body>
 
 </html>
