@@ -5,6 +5,18 @@ class GameObject {
         this.boxHelper = boxHelper;
     }
 }
+function loadFile(filePath) {
+    var result = null;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", filePath, false);
+    xmlhttp.send();
+    if (xmlhttp.status==200) {
+      result = xmlhttp.responseText;
+    }
+    return result;
+  }
+
+console.log(loadFile("file.txt"))
 
 var colorRed = 0xff0000
 var colorYellow = 0xf6ff00
