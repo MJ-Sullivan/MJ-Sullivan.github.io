@@ -18,14 +18,35 @@ body {
     background-color: rgb(27, 27, 27);
 }
 
+a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+    text-decoration: none;
+    color: initial;
+}
 
 .main-container {
     padding-top: 10px;
     display: flex;
     touch-action: none;
-    justify-content: center;
+    justify-content:center;
     height: 100%;
     width: 100%;
+}
+
+#main-left {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 33%;
+}
+
+#main-right {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 33%;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 #canvas {

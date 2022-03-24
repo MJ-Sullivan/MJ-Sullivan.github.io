@@ -1,22 +1,8 @@
-class GameObject {
-    constructor (object, boxHelper=null)
-    {
-        this.object = object;
-        this.boxHelper = boxHelper;
-    }
-}
-function loadFile(filePath) {
-    var result = null;
-    var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("GET", filePath, false);
-    xmlhttp.send();
-    if (xmlhttp.status==200) {
-      result = xmlhttp.responseText;
-    }
-    return result;
-  }
+var container = document.getElementById("main");
 
-console.log(loadFile("file.txt"))
+var file = loadFile("levelData.json");
+file = JSON.parse(file)
+console.log(file)
 
 var colorRed = 0xff0000
 var colorYellow = 0xf6ff00
@@ -24,8 +10,7 @@ var colorYellow = 0xf6ff00
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight);
 var renderer = new THREE.WebGL1Renderer({antialias: true});
-var container = document.getElementById("main");
-container.appendChild(renderer.domElement);
+document.getElementById("main-center").appendChild(renderer.domElement);
 var controls = new THREE.PointerLockControls(camera, renderer.domElement);
 
 var loader;

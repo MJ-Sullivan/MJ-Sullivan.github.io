@@ -1,0 +1,13 @@
+{
+    "levels" : [{
+        "testLevel1" : [{
+            "objects" : [[{
+                "objectFile" : "",
+                "collisionBoxes" : []
+            }]]
+        }],
+        "testLevel" : [
+            
+        ]}
+    ]
+}

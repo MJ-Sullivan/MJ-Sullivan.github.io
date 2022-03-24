@@ -10,20 +10,31 @@
   <body>
 
     <h1 class="title">Test Environment</h1>
-    
+
+    <video id="video" playsinline webkit-playsinline muted loop autoplay width="320" height="240" src="batman.mp4" style="display: none;"></video>
     <div class="main-container" id="main">
-      <video id="video" playsinline webkit-playsinline muted loop autoplay width="320" height="240" src="batman.mp4" style="display: none;"></video>
-    
-      <script src="js/three.js"></script>
-      <script src="js/PointerLockControls.js"></script>
-      <script src="js/GLTFLoader.js"></script>
-      <script src="js/DRACOLoader.js"></script>
-      <script src="js/script.js"></script>
+      <div id="main-left">
+        
+      </div>
+      <div id="main-center">
+        
+      </div>
+      <div id="main-right">
+        
+      </div>
     </div>
 
     <div class="controls-container">
       
     </div>
+
+    <script src="js/GameObject.js"></script>
+    <script src="js/FileUtilities.js"></script>
+    <script src="js/three.js"></script>
+    <script src="js/PointerLockControls.js"></script>
+    <script src="js/GLTFLoader.js"></script>
+    <script src="js/DRACOLoader.js"></script>
+    <script src="js/script.js"></script>
   </body>
 
 </html>
