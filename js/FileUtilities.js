@@ -31,6 +31,8 @@ link.className = "button"
 link.innerHTML = "<button type=\"button\">Download Level Data</button>"
 document.getElementById('main-right').appendChild(link)
 
+setDownloadData({ testProperty : "testValue" });
+
 function setDownloadData(data) {
     link.href = makeTextFile(JSON.stringify(data))
 }
