@@ -6,6 +6,7 @@ console.log(file)
 
 var colorRed = 0xff0000
 var colorYellow = 0xf6ff00
+var colorGreen = 0x00ff00
 
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight);
@@ -21,15 +22,23 @@ var isPaused;
 
 var pLight, plightHelper, pLight2, aLight;
 
-var player = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5));
-var playerBoxHelper = new THREE.BoxHelper(player, 0xff0000);
-var playerColliderOffset;
-
 var gameObjects = [];
 var collidables = [];
 var isBoxHelperVisible = false;
 
 var selectedObjectIndex = 0;
+var selectedColliderIndex = -1;
+
+var player = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5));
+var playerBoxHelper = new THREE.BoxHelper(player, 0xff0000);
+player.material = new THREE.MeshBasicMaterial({color : new THREE.Color(0.1, 0, 0)});
+player.name = "player";
+var playerGameObject = new GameObject(player, new Collider(player, playerBoxHelper));
+collidables.push(playerGameObject);
+gameObjects.push(playerGameObject);
+scene.add(player);
+scene.add(playerBoxHelper);
+var playerColliderOffset;
 
 init();
 
@@ -47,15 +56,6 @@ function init() {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('keypress', onKeyPress);
-
-    
-    player.material = new THREE.MeshBasicMaterial({color : new THREE.Color(0.1, 0, 0)});
-    player.name = "player";
-    var playerGameObject = new GameObject(player, playerBoxHelper);
-    collidables.push(playerGameObject);
-    gameObjects.push(playerGameObject);
-    scene.add(player);
-    scene.add(playerBoxHelper);
 
 
     playerColliderOffset = new THREE.Vector3(0, 0, 0);
@@ -121,11 +121,15 @@ function init() {
     plightHelper.name = "pLightHelper";
     scene.add(plightHelper);
 
+    plightHelper2 = new THREE.PointLightHelper(plight2, 0.1);
+    plightHelper2.name = "pLightHelper2";
+    scene.add(plightHelper2);
+
     loader = new THREE.GLTFLoader();
     var dloader = new THREE.DRACOLoader();
     dloader.setDecoderPath( 'js/libs/draco/' );
     loader.setDRACOLoader(dloader);
-    addGameObject("room", "room.gltf", new THREE.Vector3(0, -2.3, 0), false);
+    addGameObject("room", "room.gltf", new THREE.Vector3(0, -2.3, 0), true, false);
     addGameObject("cube", "batcube.gltf", new THREE.Vector3(10, -0, 0), true);
     addGameObject("floor", "floor.gltf", new THREE.Vector3(0, -2, 0), true);
 
@@ -136,132 +140,155 @@ function init() {
     startAnimating(60);
 }
 
-function update() {
+function isColliding() {
+    player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+    var bbox = new THREE.Box3().setFromObject(player)
+    var collided = false; 
+    collidables.some(x => {                
+        if (x.object != player) {
+            x.colliders.some(y => {
+                var bboxOther = new THREE.Box3().setFromObject(y.mesh)
+                if (bbox.intersectsBox(bboxOther)) {
+                    console.log("COLLIDE : ", x.object.name);
+                    player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+                    collided = true;
+                    return true;
+                }
+            })
+        }
+    })
+    return collided;
+}
 
+function update() {
+    // Update boxhelper positions and visibility
     collidables.map(x => {
-        x.boxHelper.visible = isBoxHelperVisible;
-        x.boxHelper.update();
+        if (x.colliders.length > 0) {
+            x.colliders.map(y => { 
+                y.boxHelper.visible = isBoxHelperVisible; 
+                y.boxHelper.update();
+            })
+        }
     })
 
     player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-    // player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-        
-    //         collidables.some(x => {                
-    //             if (x != player) {
-    //                 var bboxOther = new THREE.Box3().setFromObject(x)
-    //                 if (bbox.intersectsBox(bboxOther)) {
-    //                     console.log("COLLIDE : ", x.name);
-    //                     isPaused = true;
-    //                     controls.moveForward(-moveIncrement*1.1);
-    //                     player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-    //                     return true;
-    //                 }
-    //             }
-    //         })
+  
     if (!isPaused)
     {
         if (wHeld)
         {
             controls.moveForward(moveIncrement);
-            player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-            var bbox = new THREE.Box3().setFromObject(player)
-
-            collidables.some(x => {                
-                if (x.object != player) {
-                    var bboxOther = new THREE.Box3().setFromObject(x.object)
-                    if (bbox.intersectsBox(bboxOther)) {
-                        console.log("COLLIDE : ", x.object.name);
-                        controls.moveForward(-moveIncrement);
-                        player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-                        return true;
-                    }
-                }
-            })
+            if (isColliding()) {
+                controls.moveForward(-moveIncrement);
+                player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
         }
         if (sHeld)
         {
             controls.moveForward(-moveIncrement);
-            player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-            var bbox = new THREE.Box3().setFromObject(player)
-            
-            collidables.some(x => {                
-                if (x.object != player) {
-                    var bboxOther = new THREE.Box3().setFromObject(x.object)
-                    if (bbox.intersectsBox(bboxOther)) {
-                        console.log("COLLIDE : ", x.name);
-                        controls.moveForward(moveIncrement);
-                        player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-                        return true;
-                    }
-                }
-            })
+            if (isColliding()) {
+                controls.moveForward(moveIncrement);
+                player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
         }
         if (aHeld)
         {
             controls.moveRight(-moveIncrement);
-            player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-            var bbox = new THREE.Box3().setFromObject(player)
-            
-            collidables.some(x => {                
-                if (x.object != player) {
-                    var bboxOther = new THREE.Box3().setFromObject(x.object)
-                    if (bbox.intersectsBox(bboxOther)) {
-                        console.log("COLLIDE : ", x.name);
-                        controls.moveRight(moveIncrement);
-                        player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-                        return true;
-                    }
-                }
-            })
+            if (isColliding()) {
+                controls.moveRight(moveIncrement);
+                player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
         }
         if (dHeld)
         {
             controls.moveRight(moveIncrement);
-            player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-            var bbox = new THREE.Box3().setFromObject(player)
-            
-            collidables.some(x => {                
-                if (x.object != player) {
-                    var bboxOther = new THREE.Box3().setFromObject(x.object)
-                    if (bbox.intersectsBox(bboxOther)) {
-                        console.log("COLLIDE : ", x.name);
-                        controls.moveRight(-moveIncrement);
-                        player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
-                        return true;
-                    }
-                }
-            })
+            if (isColliding()) {
+                controls.moveRight(-moveIncrement);
+                player.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
         }
     }
 
 
-    if (upHeld)
+    if (upHeld && selectedColliderIndex == -1)
     {
         collidables[selectedObjectIndex].object.position.y += moveIncrement;
+        collidables[selectedObjectIndex].colliders.map(x => {
+            if (x.mesh != collidables[selectedObjectIndex].object)
+                x.mesh.position.y += moveIncrement;
+        });
     }
-    if (downHeld)
+    else if (upHeld)
+    {
+        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.y += moveIncrement;
+    }
+    if (downHeld && selectedColliderIndex == -1)
     {
         collidables[selectedObjectIndex].object.position.y -= moveIncrement;
+        collidables[selectedObjectIndex].colliders.map(x => {
+            if (x.mesh != collidables[selectedObjectIndex].object)
+                x.mesh.position.y -= moveIncrement;
+        });
     }
-    if (leftHeld)
+    else if (downHeld)
+    {
+        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.y -= moveIncrement;
+    }
+    if (leftHeld && selectedColliderIndex == -1)
     {
         collidables[selectedObjectIndex].object.position.z += moveIncrement;
+        collidables[selectedObjectIndex].colliders.map(x => {
+            if (x.mesh != collidables[selectedObjectIndex].object)
+                x.mesh.position.z += moveIncrement;
+        });
     }
-    if (rightHeld)
+    else if (leftHeld)
+    {
+        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.z += moveIncrement;
+
+    }
+    if (rightHeld && selectedColliderIndex == -1)
     {
         collidables[selectedObjectIndex].object.position.z -= moveIncrement;
+        collidables[selectedObjectIndex].colliders.map(x => {
+            if (x.mesh != collidables[selectedObjectIndex].object)
+                x.mesh.position.z -= moveIncrement;
+        });
     }
-    if (iHeld)
+    else if (rightHeld)
+    {
+        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.z -= moveIncrement;
+
+    }
+    if (iHeld && selectedColliderIndex == -1)
     {
         collidables[selectedObjectIndex].object.position.x += moveIncrement;
+        collidables[selectedObjectIndex].colliders.map(x => {
+            if (x.mesh != collidables[selectedObjectIndex].object)
+                x.mesh.position.x += moveIncrement;
+        });
     }
-    if (kHeld)
+    else if (iHeld)
+    {
+        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.x += moveIncrement;
+
+    }
+    if (kHeld && selectedColliderIndex == -1)
     {
         collidables[selectedObjectIndex].object.position.x -= moveIncrement;
+        collidables[selectedObjectIndex].colliders.map(x => {
+            if (x.mesh != collidables[selectedObjectIndex].object)
+                x.mesh.position.x -= moveIncrement;
+        });
+    }
+    else if (kHeld)
+    {
+        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.x -= moveIncrement;
+
     }
 }
 
-async function addGameObject(name, file, position, collidable)
+async function addGameObject(name, file, position, collidable, useMeshForCollider=true)
 {
         const geom = await new Promise(resolve => {
             loader.load(file, geometry => {
@@ -275,30 +302,33 @@ async function addGameObject(name, file, position, collidable)
                 }
         
             } );
-            if (name === "cube")
-            {
-                const vidTex = new THREE.VideoTexture(document.getElementById('video'));
-                vidTex.flipY = false;
-                const videoMat = new THREE.MeshBasicMaterial( {map: vidTex, side: THREE.DoubleSide, toneMapped: false});
-                geom.scene.traverse(child => {
-                    if (child.material) {
-                      child.material = videoMat;
-                    }
-                  });
-                  document.getElementById('video').play()
-            }
+            // if (name === "cube")
+            // {
+            //     const vidTex = new THREE.VideoTexture(document.getElementById('video'));
+            //     vidTex.flipY = false;
+            //     const videoMat = new THREE.MeshBasicMaterial( {map: vidTex, side: THREE.DoubleSide, toneMapped: false});
+            //     geom.scene.traverse(child => {
+            //         if (child.material) {
+            //           child.material = videoMat;
+            //         }
+            //       });
+            //       document.getElementById('video').play()
+            // }
 
             let model = geom.scene;
             model.position.set(position.x, position.y, position.z);
             model.name = name;
-            var boxHelper = null; 
+            var boxHelper = null;
+            var gameObject = new GameObject(model)
             if (collidable) {
-                boxHelper = new THREE.BoxHelper(model, 0xff0000);
-                boxHelper.name = "name";
-                scene.add(boxHelper);
-                var gameObject = new GameObject(model, boxHelper)
+                if (useMeshForCollider) {
+                    boxHelper = new THREE.BoxHelper(model, 0xff0000);
+                    collider = new Collider(model, boxHelper);
+                    boxHelper.name = "name";
+                    scene.add(boxHelper);
+                    gameObject = new GameObject(model, collider)
+                }
                 collidables.push(gameObject);
-                scene.add(boxHelper);
             }
             gameObjects.push(gameObject);
             scene.add(model);
@@ -439,60 +469,80 @@ function onKeyPress(e) {
             isBoxHelperVisible = !isBoxHelperVisible;
             break;
         case "Period":
-            collidables[selectedObjectIndex].boxHelper.material.color.set(colorRed)
+            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorRed));
             selectedObjectIndex = (selectedObjectIndex + 1) % collidables.length;
-            collidables[selectedObjectIndex].boxHelper.material.color.set(colorYellow)
+            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
             console.log("SELECTED : " + collidables[selectedObjectIndex].object.name)
+            selectedColliderIndex = -1
             break;
         case "Comma":
-            collidables[selectedObjectIndex].boxHelper.material.color.set(colorRed)
+            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorRed));
             selectedObjectIndex = selectedObjectIndex - 1 > -1 ? selectedObjectIndex - 1 : collidables.length - 1;
-            collidables[selectedObjectIndex].boxHelper.material.color.set(colorYellow)
+            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
             console.log("SELECTED : " + collidables[selectedObjectIndex].object.name)
+            selectedColliderIndex = -1
             break;
         case "Space":
-            var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
-            mesh.name = "Collider"
-            mesh.visible = false;
-            mesh.position.set(player.position.x, player.position.y, player.position.z);
-            var meshBoxHelper = new THREE.BoxHelper(mesh, colorYellow);
-            mesh.name = "Collider"
-            var colliderGameObject = new GameObject(mesh, meshBoxHelper);
-            scene.add(mesh)
-            scene.add(meshBoxHelper)
-            collidables.push(colliderGameObject);
-            collidables[selectedObjectIndex].boxHelper.material.color.set(colorRed)
-            selectedObjectIndex = collidables.length - 1;
+            if (selectedObjectIndex != 0) {
+                var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
+                mesh.name = "Collider"
+                mesh.visible = false;
+                mesh.position.set(collidables[selectedObjectIndex].object.position.x, collidables[selectedObjectIndex].object.position.y, collidables[selectedObjectIndex].object.position.z);
+                var meshBoxHelper = new THREE.BoxHelper(mesh, colorGreen);
+                mesh.name = "Collider"
+                scene.add(mesh)
+                scene.add(meshBoxHelper)
+                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
+                collidables[selectedObjectIndex].colliders.push(new Collider(mesh, meshBoxHelper))
+                selectedColliderIndex = collidables[selectedObjectIndex].colliders.length - 1;
+            }
+            break;
+        case "KeyX":
+            if (selectedColliderIndex != -1) {
+                var deletedCollider = collidables[selectedObjectIndex].colliders[selectedColliderIndex];
+                console.log("selectedColliderIndex " + selectedColliderIndex)
+                if (deletedCollider.mesh != collidables[selectedObjectIndex].object) {
+                    var deletedIndex = collidables[selectedObjectIndex].colliders.indexOf(deletedCollider);
+                    collidables[selectedObjectIndex].colliders.splice(deletedIndex, 1);
+                    scene.remove(deletedCollider.boxHelper)
+                    scene.remove(deletedCollider.mesh)
+                    selectedColliderIndex = selectedColliderIndex - 1;
+                    if (collidables[selectedObjectIndex].colliders[selectedColliderIndex] != null) {
+                        collidables[selectedObjectIndex].colliders[selectedColliderIndex].boxHelper.material.color.set(colorGreen);
+                    }
+                }
+            }
+            break;
+        case "IntlBackslash":
+            selectedColliderIndex = selectedColliderIndex + 1 < collidables[selectedObjectIndex].colliders.length ? selectedColliderIndex + 1 : 0;
+            if (collidables[selectedObjectIndex].colliders[selectedColliderIndex] != null){
+                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
+                collidables[selectedObjectIndex].colliders[selectedColliderIndex].boxHelper.material.color.set(colorGreen);
+            }
             break;
         case "Equal":
-            if (collidables[selectedObjectIndex].object.name == "Collider") {
-                collidables[selectedObjectIndex].object.scale.x += 0.1;
-            }
+            if (selectedColliderIndex != -1)
+                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.x += 0.1;
             break;
         case "Minus":
-            if (collidables[selectedObjectIndex].object.name == "Collider") {
-                collidables[selectedObjectIndex].object.scale.x -= 0.1;
-            }
+            if (selectedColliderIndex != -1)
+                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.x -= 0.1;
             break;
         case "BracketRight":
-            if (collidables[selectedObjectIndex].object.name == "Collider") {
-                collidables[selectedObjectIndex].object.scale.y += 0.1;
-            }
+            if (selectedColliderIndex != -1)
+                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.y += 0.1;
             break;
         case "BracketLeft":
-            if (collidables[selectedObjectIndex].object.name == "Collider") {
-                collidables[selectedObjectIndex].object.scale.y -= 0.1;
-            }
+            if (selectedColliderIndex != -1)
+                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.y -= 0.1;
             break;
         case "Backslash":
-            if (collidables[selectedObjectIndex].object.name == "Collider") {
-                collidables[selectedObjectIndex].object.scale.z += 0.1;
-            }
+            if (selectedColliderIndex != -1)
+                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.z += 0.1;
             break;
         case "Quote":
-            if (collidables[selectedObjectIndex].object.name == "Collider") {
-                collidables[selectedObjectIndex].object.scale.z -= 0.1;
-            }
+            if (selectedColliderIndex != -1)
+                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.z -= 0.1;
             break;
     }
 }

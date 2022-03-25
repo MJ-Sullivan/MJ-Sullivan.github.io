@@ -37,5 +37,17 @@ function setDownloadData(data) {
     link.href = makeTextFile(JSON.stringify(data))
 }
 
+function setLevelDownloadData(collidables) {
+    var levelData = {
+        objects : [{
+
+        }],
+    }
+    collidables.map(x => {
+        levelData.objects.push(
+            {}
+        )
+    })
+}
   
 
