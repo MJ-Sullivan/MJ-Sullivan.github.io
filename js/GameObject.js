@@ -1,7 +1,11 @@
 class GameObject {
-    constructor (object, collider=null)
+    constructor (object, model, collider=null)
     {
-        this.object = object;
+        if (object != undefined) {
+            this.object = object;
+            this.name = object.name;
+        }
+        this.model = model;
         this.colliders = []
         if (collider != null)
             this.colliders.push(collider);
