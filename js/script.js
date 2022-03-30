@@ -31,6 +31,9 @@ var player = new GameObject();
 var playerVel = 0;
 var g = 0.005;
 
+var debugMode = false;
+var wireframeMode = false;
+
 init();
 
 function init() {
@@ -39,6 +42,8 @@ function init() {
     renderer.setClearColor(0x8AAFF3, 1);
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled = true;
+    
+
     
     getLevelData(file, collidables, scene, camera, player);
     // window.addEventListener("keydown", function(e) {
@@ -119,7 +124,7 @@ function init() {
     //addGameObject(collidables, scene, "room", "room.gltf", new THREE.Vector3(0, -2.3, 0), true, false);
     //addGameObject(collidables, scene, "cube", "batcube.gltf", new THREE.Vector3(10, -0, 0), true);
     //addGameObject(collidables, scene, "floor", "floor.gltf", new THREE.Vector3(0, -2, 0), true);    
-
+        
     window.addEventListener( 'resize', onWindowResize);
 
     startAnimating(60);
@@ -207,82 +212,83 @@ function update() {
         }
     }
 
+    if (debugMode) {
+        if (upHeld && selectedColliderIndex == -1)
+        {
+            collidables[selectedObjectIndex].object.position.y += moveIncrement;
+            collidables[selectedObjectIndex].colliders.map(x => {
+                if (x.mesh != collidables[selectedObjectIndex].object)
+                    x.mesh.position.y += moveIncrement;
+            });
+        }
+        else if (upHeld)
+        {
+            collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.y += moveIncrement;
+        }
+        if (downHeld && selectedColliderIndex == -1)
+        {
+            collidables[selectedObjectIndex].object.position.y -= moveIncrement;
+            collidables[selectedObjectIndex].colliders.map(x => {
+                if (x.mesh != collidables[selectedObjectIndex].object)
+                    x.mesh.position.y -= moveIncrement;
+            });
+        }
+        else if (downHeld)
+        {
+            collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.y -= moveIncrement;
+        }
+        if (leftHeld && selectedColliderIndex == -1)
+        {
+            collidables[selectedObjectIndex].object.position.z += moveIncrement;
+            collidables[selectedObjectIndex].colliders.map(x => {
+                if (x.mesh != collidables[selectedObjectIndex].object)
+                    x.mesh.position.z += moveIncrement;
+            });
+        }
+        else if (leftHeld)
+        {
+            collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.z += moveIncrement;
 
-    if (upHeld && selectedColliderIndex == -1)
-    {
-        collidables[selectedObjectIndex].object.position.y += moveIncrement;
-        collidables[selectedObjectIndex].colliders.map(x => {
-            if (x.mesh != collidables[selectedObjectIndex].object)
-                x.mesh.position.y += moveIncrement;
-        });
-    }
-    else if (upHeld)
-    {
-        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.y += moveIncrement;
-    }
-    if (downHeld && selectedColliderIndex == -1)
-    {
-        collidables[selectedObjectIndex].object.position.y -= moveIncrement;
-        collidables[selectedObjectIndex].colliders.map(x => {
-            if (x.mesh != collidables[selectedObjectIndex].object)
-                x.mesh.position.y -= moveIncrement;
-        });
-    }
-    else if (downHeld)
-    {
-        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.y -= moveIncrement;
-    }
-    if (leftHeld && selectedColliderIndex == -1)
-    {
-        collidables[selectedObjectIndex].object.position.z += moveIncrement;
-        collidables[selectedObjectIndex].colliders.map(x => {
-            if (x.mesh != collidables[selectedObjectIndex].object)
-                x.mesh.position.z += moveIncrement;
-        });
-    }
-    else if (leftHeld)
-    {
-        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.z += moveIncrement;
+        }
+        if (rightHeld && selectedColliderIndex == -1)
+        {
+            collidables[selectedObjectIndex].object.position.z -= moveIncrement;
+            collidables[selectedObjectIndex].colliders.map(x => {
+                if (x.mesh != collidables[selectedObjectIndex].object)
+                    x.mesh.position.z -= moveIncrement;
+            });
+        }
+        else if (rightHeld)
+        {
+            collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.z -= moveIncrement;
 
-    }
-    if (rightHeld && selectedColliderIndex == -1)
-    {
-        collidables[selectedObjectIndex].object.position.z -= moveIncrement;
-        collidables[selectedObjectIndex].colliders.map(x => {
-            if (x.mesh != collidables[selectedObjectIndex].object)
-                x.mesh.position.z -= moveIncrement;
-        });
-    }
-    else if (rightHeld)
-    {
-        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.z -= moveIncrement;
+        }
+        if (iHeld && selectedColliderIndex == -1)
+        {
+            collidables[selectedObjectIndex].object.position.x += moveIncrement;
+            collidables[selectedObjectIndex].colliders.map(x => {
+                if (x.mesh != collidables[selectedObjectIndex].object)
+                    x.mesh.position.x += moveIncrement;
+            });
+        }
+        else if (iHeld)
+        {
+            collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.x += moveIncrement;
 
-    }
-    if (iHeld && selectedColliderIndex == -1)
-    {
-        collidables[selectedObjectIndex].object.position.x += moveIncrement;
-        collidables[selectedObjectIndex].colliders.map(x => {
-            if (x.mesh != collidables[selectedObjectIndex].object)
-                x.mesh.position.x += moveIncrement;
-        });
-    }
-    else if (iHeld)
-    {
-        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.x += moveIncrement;
+        }
+        if (kHeld && selectedColliderIndex == -1)
+        {
+            collidables[selectedObjectIndex].object.position.x -= moveIncrement;
+            collidables[selectedObjectIndex].colliders.map(x => {
+                if (x.mesh != collidables[selectedObjectIndex].object)
+                    x.mesh.position.x -= moveIncrement;
+            });
+        }
+        else if (kHeld)
+        {
+            collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.x -= moveIncrement;
 
-    }
-    if (kHeld && selectedColliderIndex == -1)
-    {
-        collidables[selectedObjectIndex].object.position.x -= moveIncrement;
-        collidables[selectedObjectIndex].colliders.map(x => {
-            if (x.mesh != collidables[selectedObjectIndex].object)
-                x.mesh.position.x -= moveIncrement;
-        });
-    }
-    else if (kHeld)
-    {
-        collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.position.x -= moveIncrement;
-
+        }
     }
 }
 
@@ -421,83 +427,140 @@ function onKeyPress(e) {
             if (Math.abs(playerVel) < 0.00001)
                 playerVel += 0.1;
             break;
+        case "Backquote":
+            debugMode = !debugMode;
+            if (debugMode) {
+                document.getElementById("debug-text").innerText = "DEBUG ON | wireframe: off"
+            }
+            else {
+                document.getElementById("debug-text").innerText = ""
+                if (wireframeMode) {
+                    wireframeMode = false;
+                    collidables.map(x => {
+                        reloadGameObject(x, scene);
+                    });
+                }
+                isBoxHelperVisible = false;
+            }
+            break;
+        case "Digit1":
+            if (debugMode) {
+                wireframeMode = !wireframeMode;
+                if (wireframeMode) {
+                    document.getElementById("debug-text").innerText = "DEBUG ON | wireframe: on"
+                    collidables.map(x => {
+                        reloadAsWireframe(x, scene);
+                    });
+                }
+                else {
+                    document.getElementById("debug-text").innerText = "DEBUG ON | wireframe: off"; 
+                    collidables.map(x => {
+                        reloadGameObject(x, scene);
+                    });
+                }
+            }
+            break;
         case "KeyV":
-            isBoxHelperVisible = !isBoxHelperVisible;
+            if (debugMode)
+            {
+                isBoxHelperVisible = !isBoxHelperVisible;
+            }
             break;
         case "Period":
-            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorRed));
-            selectedObjectIndex = (selectedObjectIndex + 1) % collidables.length;
-            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
-            console.log("SELECTED : " + collidables[selectedObjectIndex].object.name)
-            selectedColliderIndex = -1
+            if (debugMode) {
+                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorRed));
+                selectedObjectIndex = (selectedObjectIndex + 1) % collidables.length;
+                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
+                console.log("SELECTED : " + collidables[selectedObjectIndex].object.name)
+                selectedColliderIndex = -1
+            }
             break;
         case "Comma":
-            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorRed));
-            selectedObjectIndex = selectedObjectIndex - 1 > -1 ? selectedObjectIndex - 1 : collidables.length - 1;
-            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
-            console.log("SELECTED : " + collidables[selectedObjectIndex].object.name)
-            selectedColliderIndex = -1
+            if (debugMode) {
+                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorRed));
+                selectedObjectIndex = selectedObjectIndex - 1 > -1 ? selectedObjectIndex - 1 : collidables.length - 1;
+                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
+                console.log("SELECTED : " + collidables[selectedObjectIndex].object.name)
+                selectedColliderIndex = -1
+            }
             break;
         case "Enter":
-            console.log("New collider on ", collidables[selectedObjectIndex].object.name, " object")
-            var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
-            mesh.visible = false;
-            mesh.position.set(collidables[selectedObjectIndex].object.position.x, collidables[selectedObjectIndex].object.position.y, collidables[selectedObjectIndex].object.position.z);
-            var meshBoxHelper = new THREE.BoxHelper(mesh, colorGreen);
-            mesh.name = "Collider"
-            scene.add(mesh)
-            scene.add(meshBoxHelper)
-            collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
-            collidables[selectedObjectIndex].colliders.push(new Collider(mesh, meshBoxHelper))
-            selectedColliderIndex = collidables[selectedObjectIndex].colliders.length - 1;
-        
+            if (debugMode) {
+                console.log("New collider on ", collidables[selectedObjectIndex].object.name, " object")
+                var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
+                mesh.visible = false;
+                mesh.position.set(collidables[selectedObjectIndex].object.position.x, collidables[selectedObjectIndex].object.position.y, collidables[selectedObjectIndex].object.position.z);
+                var meshBoxHelper = new THREE.BoxHelper(mesh, colorGreen);
+                mesh.name = "Collider"
+                scene.add(mesh)
+                scene.add(meshBoxHelper)
+                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
+                collidables[selectedObjectIndex].colliders.push(new Collider(mesh, meshBoxHelper))
+                selectedColliderIndex = collidables[selectedObjectIndex].colliders.length - 1;
+            }
             break;
         case "KeyX":
-            if (selectedColliderIndex != -1) {
-                var deletedCollider = collidables[selectedObjectIndex].colliders[selectedColliderIndex];
-                console.log("selectedColliderIndex " + selectedColliderIndex)
-                if (deletedCollider.mesh != collidables[selectedObjectIndex].object) {
-                    var deletedIndex = collidables[selectedObjectIndex].colliders.indexOf(deletedCollider);
-                    collidables[selectedObjectIndex].colliders.splice(deletedIndex, 1);
-                    scene.remove(deletedCollider.boxHelper)
-                    scene.remove(deletedCollider.mesh)
-                    selectedColliderIndex = selectedColliderIndex - 1;
-                    if (collidables[selectedObjectIndex].colliders[selectedColliderIndex] != null) {
-                        collidables[selectedObjectIndex].colliders[selectedColliderIndex].boxHelper.material.color.set(colorGreen);
+            if (debugMode) {
+                if (selectedColliderIndex != -1) {
+                    var deletedCollider = collidables[selectedObjectIndex].colliders[selectedColliderIndex];
+                    console.log("selectedColliderIndex " + selectedColliderIndex)
+                    if (deletedCollider.mesh != collidables[selectedObjectIndex].object) {
+                        var deletedIndex = collidables[selectedObjectIndex].colliders.indexOf(deletedCollider);
+                        collidables[selectedObjectIndex].colliders.splice(deletedIndex, 1);
+                        scene.remove(deletedCollider.boxHelper)
+                        scene.remove(deletedCollider.mesh)
+                        selectedColliderIndex = selectedColliderIndex - 1;
+                        if (collidables[selectedObjectIndex].colliders[selectedColliderIndex] != null) {
+                            collidables[selectedObjectIndex].colliders[selectedColliderIndex].boxHelper.material.color.set(colorGreen);
+                        }
                     }
                 }
             }
             break;
         case "IntlBackslash":
-            selectedColliderIndex = selectedColliderIndex + 1 < collidables[selectedObjectIndex].colliders.length ? selectedColliderIndex + 1 : 0;
-            if (collidables[selectedObjectIndex].colliders[selectedColliderIndex] != null){
-                collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
-                collidables[selectedObjectIndex].colliders[selectedColliderIndex].boxHelper.material.color.set(colorGreen);
+            if (debugMode) {
+                selectedColliderIndex = selectedColliderIndex + 1 < collidables[selectedObjectIndex].colliders.length ? selectedColliderIndex + 1 : 0;
+                if (collidables[selectedObjectIndex].colliders[selectedColliderIndex] != null){
+                    collidables[selectedObjectIndex].colliders.map(x => x.boxHelper.material.color.set(colorYellow));
+                    collidables[selectedObjectIndex].colliders[selectedColliderIndex].boxHelper.material.color.set(colorGreen);
+                }
             }
             break;
         case "Equal":
-            if (selectedColliderIndex != -1)
-                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.x += 0.1;
+            if (debugMode) {
+                if (selectedColliderIndex != -1)
+                    collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.x += 0.1;
+            }
             break;
         case "Minus":
-            if (selectedColliderIndex != -1)
-                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.x -= 0.1;
+            if (debugMode) {
+                if (selectedColliderIndex != -1)
+                    collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.x -= 0.1;
+            }
             break;
         case "BracketRight":
-            if (selectedColliderIndex != -1)
-                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.y += 0.1;
+            if (debugMode) {
+                if (selectedColliderIndex != -1)
+                    collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.y += 0.1;
+            }
             break;
         case "BracketLeft":
-            if (selectedColliderIndex != -1)
-                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.y -= 0.1;
+            if (debugMode) {
+                if (selectedColliderIndex != -1)
+                    collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.y -= 0.1;
+            }
             break;
         case "Backslash":
-            if (selectedColliderIndex != -1)
-                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.z += 0.1;
+            if (debugMode) {
+                if (selectedColliderIndex != -1)
+                    collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.z += 0.1;
+            }
             break;
         case "Quote":
-            if (selectedColliderIndex != -1)
-                collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.z -= 0.1;
+            if (debugMode) {
+                if (selectedColliderIndex != -1)
+                    collidables[selectedObjectIndex].colliders[selectedColliderIndex].mesh.scale.z -= 0.1;
+            }
             break;
     }
 }

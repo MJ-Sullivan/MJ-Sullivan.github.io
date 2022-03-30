@@ -35,6 +35,14 @@ a.button {
     width: 100%;
 }
 
+.overlay-text {
+    z-index: 99;
+    position: absolute;
+    color: white;
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
 #main-left {
     display: flex;
     flex-direction: column;

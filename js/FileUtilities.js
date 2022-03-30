@@ -112,6 +112,7 @@ async function addGameObject(collidables, scene, name, file, position, colliders
                 node.receiveShadow = true;
             }
         });
+            // ANIMATED TEXTURE
             // if (name === "cube")
             // {
             //     const vidTex = new THREE.VideoTexture(document.getElementById('video'));
@@ -150,6 +151,81 @@ async function addGameObject(collidables, scene, name, file, position, colliders
                 })
                 collidables.push(gameObject);
             }
+            scene.add(model);
+    }
+}
+
+async function reloadGameObject(gameObject, scene)
+{
+    if (file != "") {
+        const geom = await new Promise(resolve => {
+            loader.load(gameObject.model, geometry => {
+                resolve(geometry);
+            })})
+        geom.scene.traverse( function( node ) {
+            if ( node.isMesh ) { 
+                node.castShadow = true; 
+                node.receiveShadow = true;
+            }
+        });
+            // ANIMATED TEXTURE
+            // if (name === "cube")
+            // {
+            //     const vidTex = new THREE.VideoTexture(document.getElementById('video'));
+            //     vidTex.flipY = false;
+            //     const videoMat = new THREE.MeshBasicMaterial( {map: vidTex, side: THREE.DoubleSide, toneMapped: false});
+            //     geom.scene.traverse(child => {
+            //         if (child.material) {
+            //           child.material = videoMat;
+            //         }
+            //       });
+            //       document.getElementById('video').play()
+            // }
+
+            let model = geom.scene;
+            model.position.set(gameObject.object.position.x, gameObject.object.position.y, gameObject.object.position.z);
+            model.name = gameObject.object.name;
+            
+            
+            scene.remove(gameObject.object)
+            gameObject.object = model;
+            scene.add(model);
+    }
+}
+
+async function reloadAsWireframe(gameObject, scene)
+{
+    if (file != "") {
+        const geom = await new Promise(resolve => {
+            loader.load(gameObject.model, geometry => {
+                resolve(geometry);
+            })})
+        geom.scene.traverse( function( node ) {
+            if ( node.isMesh ) { 
+                node.material = new THREE.MeshBasicMaterial()
+                node.material.wireframe = true;
+            }
+        });
+            // ANIMATED TEXTURE
+            // if (name === "cube")
+            // {
+            //     const vidTex = new THREE.VideoTexture(document.getElementById('video'));
+            //     vidTex.flipY = false;
+            //     const videoMat = new THREE.MeshBasicMaterial( {map: vidTex, side: THREE.DoubleSide, toneMapped: false});
+            //     geom.scene.traverse(child => {
+            //         if (child.material) {
+            //           child.material = videoMat;
+            //         }
+            //       });
+            //       document.getElementById('video').play()
+            // }
+
+            let model = geom.scene;
+            model.position.set(gameObject.object.position.x, gameObject.object.position.y, gameObject.object.position.z);
+            model.name = gameObject.object.name;
+            
+            scene.remove(gameObject.object)
+            gameObject.object = model;
             scene.add(model);
     }
 }
