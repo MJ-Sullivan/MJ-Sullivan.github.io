@@ -164,11 +164,11 @@ function update() {
     
     if (!isPaused)
     {
-        playerVel += g;
-        camera.position.y -= playerVel;
+        playerVel -= g;
+        camera.position.y += playerVel;
         player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
         if (isColliding()) {
-            camera.position.y += playerVel;
+            camera.position.y -= playerVel;
             playerVel = 0;
             player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
         }
@@ -417,6 +417,10 @@ function onKeyUp(e)
 function onKeyPress(e) {
     console.log(e.code, " pressed")
     switch (e.code) {
+        case "Space":
+            if (Math.abs(playerVel) < 0.00001)
+                playerVel += 0.1;
+            break;
         case "KeyV":
             isBoxHelperVisible = !isBoxHelperVisible;
             break;
@@ -434,8 +438,7 @@ function onKeyPress(e) {
             console.log("SELECTED : " + collidables[selectedObjectIndex].object.name)
             selectedColliderIndex = -1
             break;
-        case "Space":
-            
+        case "Enter":
             console.log("New collider on ", collidables[selectedObjectIndex].object.name, " object")
             var mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
             mesh.visible = false;
