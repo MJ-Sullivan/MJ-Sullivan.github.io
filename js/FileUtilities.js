@@ -26,7 +26,7 @@ makeTextFile = function (text) {
 };
 
 var link = document.createElement('a');
-link.setAttribute('download', 'levelData.JSON');
+link.setAttribute('download', 'data/levelData.JSON');
 link.className = "button"
 link.innerHTML = "<button type=\"button\">Download Level Data</button>"
 document.getElementById('main-right').appendChild(link)

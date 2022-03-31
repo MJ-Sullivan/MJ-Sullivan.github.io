@@ -312,7 +312,6 @@ a.nav-item:hover {
     position: relative;
     width: auto;
     max-height: 100%;
-    border-radius: 10px 10px 0 0;
     opacity: 50%;
     transition: opacity 0.5s, transform 0.5s;
     transform: scale(1.3);

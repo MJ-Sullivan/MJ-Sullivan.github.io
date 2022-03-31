@@ -14,7 +14,7 @@
     "objects": [
         {
             "name": "floor",
-            "model": "floor.gltf",
+            "model": "models/floor.gltf",
             "position": {
                 "x": 0,
                 "y": -2,
@@ -37,7 +37,7 @@
         },
         {
             "name": "room",
-            "model": "room.gltf",
+            "model": "models/room.gltf",
             "position": {
                 "x": 0,
                 "y": -2.3,

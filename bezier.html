@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bezier Curve Tool</title>
+    <link rel="stylesheet" href="styles/bezier.css">
+  </head>
+
+  <body>
+
+    <h1 class="title">Bezier Curve Tool</h1>
+
+    <div class="main-container">
+      <canvas id="canvas" width="1500" height="700"></canvas>
+    </div>
+
+    <div class="controls-container">
+      <div class="slidecontainer">
+        <label id="interp">Interpolation : 0.000</label>
+        <input type="range" min="0" max="1000" value="0" class="slider" id="lerpSlider">
+      </div>
+    </div>
+
+    
+
+    <script src="js/scripts/bezier.js"></script>
+  </body>
+
+</html>
