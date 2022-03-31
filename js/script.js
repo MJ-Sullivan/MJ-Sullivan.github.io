@@ -39,7 +39,7 @@ init();
 function init() {
 
     renderer.setSize(0.8 * window.innerWidth, 0.8 * window.innerHeight);
-    renderer.setClearColor(0x8AAFF3, 1);
+    renderer.setClearColor(0x000000, 1);
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled = true;
     

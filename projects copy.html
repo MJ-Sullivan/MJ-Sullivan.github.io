@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Michael Sullivan - Home</title>
+    <title>MICHAEL SULLIVAN - Projects</title>
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico" />
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -14,21 +14,21 @@
       <nav>
         <ul class="navbar">
           
-          <a href="#" class="nav-item">
+          <a href="index.html" class="nav-item">
             <img src="images/home.svg" width=32 height=32 class="nav-icon">
             <div class="nav-text">
-              <p style="color:white; font-weight:bold; font-size: 23px;">Home</p>
+              <p>Home</p>
             </div>
           </a>
 
-          <a href="about.html" class="nav-item">
+          <a href="#" class="nav-item">
             <img src="images/about.svg" width=32 height=32 class="nav-icon">
             <div class="nav-text">
-              <p>About Me</p>
+              <p>About</p>
             </div>
           </a>
 
-          <a href="projects.html" class="nav-item">
+          <a href="#" class="nav-item">
             <img src="images/projects.svg" width=32 height=32 class="nav-icon">
             <div class="nav-text">
               <p>Projects</p>
@@ -46,24 +46,17 @@
     </div>
 
     <div class="main-section">
-      <ul class="main-flex">
-        <li class="main-section-item" id="main-text">
-          <ul>
-            <li>
-              <h1>Welcome visitor!</h1>
-            </li>
-            <li>
-              <p>Hello, I'm <strong style="color:white">Michael Sullivan</strong>. Here you can find out about me, as well as some examples of programming that I have worked on. Some elements are interactive so feel free to stay and have a play. <span style="color: white;">Enjoy!</span></p>
-            </li>
-          </ul>
-                  </li>
-        <li class="main-section-item" id="main-image">
-          <img src="images/main-image.png">
-        </li>
-      </ul>
+        <div class="main-container">
+            <canvas id="canvas" width="700" height="450"></canvas>
+          </div>
+      
+          <div class="controls-container">
+            
+          </div>
+      
+          <script src="scripts/air-hockey.js"></script>
+      
 
     </div>
-    
-
   </body>
 </html>
