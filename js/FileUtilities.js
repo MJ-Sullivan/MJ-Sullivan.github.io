@@ -37,12 +37,12 @@ function setDownloadData(data) {
     link.href = makeTextFile(JSON.stringify(data))
 }
 
-function setLevelDownloadData(collidables, playerObject) {
+function setLevelDownloadData(collidables, playerObject, camera) {
     var playerSize = new THREE.Vector3(); 
     (new THREE.Box3().setFromObject(playerObject.object)).getSize(playerSize)
     var levelData = {
         player : {
-            position : playerObject.object.position,
+            position : new THREE.Vector3(camera.position.x, camera.position.y + 2, camera.position.z),
             size : playerSize
         },
         objects : [],
@@ -89,6 +89,7 @@ function addPlayer(level, scene, camera, player) {
     var playerMesh = new THREE.Mesh(new THREE.BoxGeometry(level.player.size.x, level.player.size.y, level.player.size.z));
     var playerBoxHelper = new THREE.BoxHelper(playerMesh, 0xff0000);
     playerMesh.material = new THREE.MeshBasicMaterial({color : new THREE.Color(0.1, 0, 0)});
+    playerMesh.visible = false;
     player.object = playerMesh;
     player.colliders.push(new Collider(playerMesh, playerBoxHelper));
     scene.add(playerMesh);

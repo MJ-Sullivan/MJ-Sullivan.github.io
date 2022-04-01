@@ -1,6 +1,6 @@
 var container = document.getElementById("main");
 
-var file = loadFile("levelData.json");
+var file = loadFile("data/levelData.json");
 
 var colorRed = 0xff0000
 var colorYellow = 0xf6ff00
@@ -14,7 +14,7 @@ var controls = new THREE.PointerLockControls(camera, renderer.domElement);
 
 var loader;
 var stop, frameCount, fps, fpsInterval, startTime, now, then, elapsed;
-var wHeld, sHeld, aHeld, dHeld, upHeld, downHeld, leftHeld, rightHeld;
+var wHeld, sHeld, aHeld, dHeld, upHeld, downHeld, leftHeld, rightHeld, cHeld, playerCrouch;
 var moveIncrement;
 var isPaused;
 
@@ -56,7 +56,8 @@ function init() {
     window.addEventListener('keypress', onKeyPress);
 
 
-    playerColliderOffset = new THREE.Vector3(0, 0, 0);
+    playerCrouch = 0;
+    playerColliderOffset = new THREE.Vector3(0, -1, 0);
     player.object.position.set(camera.position.x, camera.position.y, camera.position.z);
     
 
@@ -73,6 +74,8 @@ function init() {
     aHeld = false;
     dHeld = false;
 
+    cHeld = false;
+
     upHeld = false;
     downHeld = false;
     leftHeld = false;
@@ -82,7 +85,7 @@ function init() {
     kHeld = false;
 
     pHeld = false;
-    moveIncrement = 0.1;
+    moveIncrement = 0.07;
 
     isPaused = false;
 
@@ -165,10 +168,19 @@ function update() {
         x.boxHelper.update();
     })
 
-
-    
     if (!isPaused)
     {
+        playerCrouch = 0;
+        if (cHeld) {
+            playerCrouch = 0.5;
+        }
+
+        var camVec = new THREE.Vector3();
+        camera.getWorldDirection(camVec);
+        var theta = Math.atan2(camVec.x, camVec.z);
+
+        camera.position.y -= playerCrouch;
+
         playerVel -= g;
         camera.position.y += playerVel;
         player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
@@ -177,39 +189,65 @@ function update() {
             playerVel = 0;
             player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
         }
-
+        
         if (wHeld)
         {
-            controls.moveForward(moveIncrement);
+            camera.position.z += moveIncrement * Math.cos(theta);
             if (isColliding()) {
-                controls.moveForward(-moveIncrement);
+                camera.position.z -= moveIncrement * Math.cos(theta);
+                player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
+
+            camera.position.x += moveIncrement * Math.sin(theta);
+            if (isColliding()) {
+                camera.position.x -= moveIncrement * Math.sin(theta);
                 player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
             }
         }
         if (sHeld)
         {
-            controls.moveForward(-moveIncrement);
+            camera.position.z -= moveIncrement * Math.cos(theta);
             if (isColliding()) {
-                controls.moveForward(moveIncrement);
+                camera.position.z += moveIncrement * Math.cos(theta);
+                player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
+
+            camera.position.x -= moveIncrement * Math.sin(theta);
+            if (isColliding()) {
+                camera.position.x += moveIncrement * Math.sin(theta);
                 player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
             }
         }
         if (aHeld)
         {
-            controls.moveRight(-moveIncrement);
+            camera.position.x += moveIncrement * Math.cos(theta);
             if (isColliding()) {
-                controls.moveRight(moveIncrement);
+                camera.position.x -= moveIncrement * Math.cos(theta);
+                player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
+
+            camera.position.z -= moveIncrement * Math.sin(theta);
+            if (isColliding()) {
+                camera.position.z += moveIncrement * Math.sin(theta);
                 player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
             }
         }
         if (dHeld)
         {
-            controls.moveRight(moveIncrement);
+            camera.position.x -= moveIncrement * Math.cos(theta);
             if (isColliding()) {
-                controls.moveRight(-moveIncrement);
+                camera.position.x += moveIncrement * Math.cos(theta);
+                player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
+            }
+
+            camera.position.z += moveIncrement * Math.sin(theta);
+            if (isColliding()) {
+                camera.position.z -= moveIncrement * Math.sin(theta);
                 player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
             }
         }
+
+        camera.position.y += playerCrouch;
     }
 
     if (debugMode) {
@@ -346,7 +384,7 @@ function onKeyDown(e)
                 controls.unlock();
             }
             pHeld = true;
-            setDownloadData(setLevelDownloadData(collidables, player));
+            setDownloadData(setLevelDownloadData(collidables, player, camera));
             break;
         case "KeyW":
             wHeld = true;
@@ -377,6 +415,9 @@ function onKeyDown(e)
             break;
         case "KeyK":
             kHeld = true;
+            break;
+        case "KeyC":
+            cHeld = true;
             break;
     }
 }
@@ -416,6 +457,9 @@ function onKeyUp(e)
             break;
         case "KeyK":
             kHeld = false;
+            break;
+        case "KeyC":
+            cHeld = false;
             break;
     }
 }
