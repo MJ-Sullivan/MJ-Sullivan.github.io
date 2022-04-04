@@ -1,3 +1,4 @@
+
 function loadFile(filePath) {
     var result = null;
     var xmlhttp = new XMLHttpRequest();
@@ -26,10 +27,30 @@ makeTextFile = function (text) {
 };
 
 var link = document.createElement('a');
-link.setAttribute('download', 'data/levelData.JSON');
-link.className = "button"
-link.innerHTML = "<button type=\"button\">Download Level Data</button>"
+link.setAttribute('download', '');
+link.innerHTML = "<button type=\"button\">Download Level Data</button>";
 document.getElementById('main-right').appendChild(link)
+
+
+
+var fileSelector = document.createElement('input');
+fileSelector.setAttribute('type', 'file');
+
+var selectDialogueLink = document.createElement('a');
+selectDialogueLink.setAttribute('href', '');
+selectDialogueLink.innerHTML = "<button type=\"button\">Open Mesh</button>";
+document.getElementById('main-right').appendChild(selectDialogueLink);
+
+selectDialogueLink.onclick = function () {
+     fileSelector.click();
+     return false;
+}
+fileSelector.onchange = function(e) {
+    console.log( fileSelector.files[0].name)
+    addGameObjectFromInput(collidables, scene, "fileObject", fileSelector.files[0]);
+    fileSelector.value = "";
+};
+
 
 setDownloadData({ testProperty : "testValue" });
 
@@ -100,13 +121,45 @@ function addPlayer(level, scene, camera, player) {
     camera.position.z = level.player.position.z;
 }
 
-async function addGameObject(collidables, scene, name, file, position, colliders, collidable=true, useMeshForCollider=true)
+async function addGameObjectFromInput(collidables, scene, name, file, collidable=true)
+{
+    if (file != "") {
+        const uploadedFile = file
+        const url = URL.createObjectURL(uploadedFile);
+        const geom = await new Promise(resolve => {
+            loader.load(url, geometry => {
+                resolve(geometry);
+            })
+        })
+        
+        geom.scene.traverse( function( node ) {
+            if ( node.isMesh ) { 
+                node.castShadow = true; 
+                node.receiveShadow = true;
+                node.material.envMapIntensity = 0.3
+                node.material.env = scene.environment;
+                             
+            }
+        });
+            let model = geom.scene;
+            model.scale.set(0.1, 0.1, 0.1);
+            model.name = name;
+            var gameObject = new GameObject(model, "models/" + file.name)
+            if (collidable) {
+                collidables.push(gameObject);
+            }
+            scene.add(model);
+    }
+}
+
+async function addGameObject(collidables, scene, name, file, position, colliders, collidable=true, useMeshForCollider=true, fromInput=false)
 {
     if (file != "") {
         const geom = await new Promise(resolve => {
             loader.load(file, geometry => {
                 resolve(geometry);
             })})
+
         geom.scene.traverse( function( node ) {
             if ( node.isMesh ) { 
                 node.castShadow = true; 
@@ -201,10 +254,19 @@ async function reloadAsWireframe(gameObject, scene)
             loader.load(gameObject.model, geometry => {
                 resolve(geometry);
             })})
+        var material = new THREE.MeshBasicMaterial( {
+            color: 0x008ae0,
+            polygonOffset: true,
+            polygonOffsetFactor: 1, // positive value pushes polygon further away
+            polygonOffsetUnits: 1,
+            opacity: 0.4,
+            transparent: true,
+            depthWrite: false
+        } );
         geom.scene.traverse( function( node ) {
             if ( node.isMesh ) { 
-                node.material = new THREE.MeshBasicMaterial()
-                node.material.wireframe = true;
+                node.material = material
+                //node.material.wireframe = true;
             }
         });
             // ANIMATED TEXTURE
@@ -221,10 +283,25 @@ async function reloadAsWireframe(gameObject, scene)
             //       document.getElementById('video').play()
             // }
 
-            let model = geom.scene;
+            let model = geom.scene.clone();
+            var newMaterial = new THREE.MeshPhongMaterial( {
+                color: 0x008ae0,
+                wireframe: true,
+                wireframeLinewidth: 100,
+                opacity: 0.5,
+                transparent: true
+            } );
+            geom.scene.traverse( function( node ) {
+                if ( node.isMesh ) { 
+                    node.material = newMaterial
+                    //node.material.wireframe = true;
+                }
+            });
+            let wireframe = geom.scene.clone();
+            wireframe.name = "wireframe"
             model.position.set(gameObject.object.position.x, gameObject.object.position.y, gameObject.object.position.z);
             model.name = gameObject.object.name;
-            
+            model.add( wireframe );
             scene.remove(gameObject.object)
             gameObject.object = model;
             scene.add(model);

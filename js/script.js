@@ -8,7 +8,9 @@ var colorGreen = 0x00ff00
 
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight);
-var renderer = new THREE.WebGL1Renderer({antialias: true});
+var renderer = new THREE.WebGL1Renderer({ antialias: true, physicallyCorrectLights: true, })
+//renderer.outputEncoding = THREE.sRGBEncoding;
+
 document.getElementById("main-center").appendChild(renderer.domElement);
 var controls = new THREE.PointerLockControls(camera, renderer.domElement);
 
@@ -39,7 +41,7 @@ init();
 function init() {
 
     renderer.setSize(0.8 * window.innerWidth, 0.8 * window.innerHeight);
-    renderer.setClearColor(0x000000, 1);
+    renderer.setClearColor(0x000f2e, 1);
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled = true;
     
@@ -91,7 +93,7 @@ function init() {
 
 
 
-    plight = new THREE.PointLight( 0xfffde6, 1, 100);
+    plight = new THREE.PointLight(0xffffff, 0.5, 100);
     plight.position.set(1.3, 1.5, 1);
     plight.castShadow = true;
 
@@ -102,7 +104,7 @@ function init() {
     plight.name = "pLight";
     scene.add(plight);
 
-    plight2 = new THREE.PointLight( 0xfffde6, 1, 100);
+    plight2 = new THREE.PointLight( 0xffffff, 2, 100);
     plight2.position.set(10, 1.5, 7);
     plight2.castShadow = true;
 
@@ -113,7 +115,7 @@ function init() {
     plight2.name = "pLight2";
     scene.add(plight2);
 
-    alight = new THREE.AmbientLight(0xe6ffff, 1)
+    alight = new THREE.AmbientLight(0xffffff, 0.6)
     scene.add(alight)
 
     plightHelper = new THREE.PointLightHelper(plight, 0.1);
@@ -123,6 +125,28 @@ function init() {
     plightHelper2 = new THREE.PointLightHelper(plight2, 0.1);
     plightHelper2.name = "pLightHelper2";
     scene.add(plightHelper2);
+
+    var cubeLoader = new THREE.CubeTextureLoader();
+    cubeLoader.setPath('textures/park2/');
+    var textureCube = cubeLoader.load([
+        'posx.jpg', 'negx.jpg',
+        'posy.jpg', 'negy.jpg',
+        'posz.jpg', 'negz.jpg'
+    ])
+    scene.environment = textureCube;
+
+    geometry = new THREE.PlaneGeometry(0.7, 2.2);
+				verticalMirror = new THREE.Reflector( geometry, {
+					clipBias: 0.000,
+					textureWidth: window.innerWidth * window.devicePixelRatio,
+					textureHeight: window.innerHeight * window.devicePixelRatio,
+					color: 0x808080
+				} );
+				verticalMirror.position.y = 0;
+				verticalMirror.position.z = 1.15;
+                verticalMirror.position.x = 3.802;
+                verticalMirror.rotation.y -= Math.PI / 2
+				scene.add( verticalMirror );
 
     //addGameObject(collidables, scene, "room", "room.gltf", new THREE.Vector3(0, -2.3, 0), true, false);
     //addGameObject(collidables, scene, "cube", "batcube.gltf", new THREE.Vector3(10, -0, 0), true);
@@ -142,7 +166,9 @@ function isColliding() {
             x.colliders.some(y => {
                 var bboxOther = new THREE.Box3().setFromObject(y.mesh)
                 if (bbox.intersectsBox(bboxOther)) {
-                    console.log("COLLIDE : ", x.object.name);
+                    if (debugMode) {
+                        console.log("COLLIDE : ", x.object.name);
+                    }
                     player.object.position.set(camera.position.x + playerColliderOffset.x, camera.position.y + playerColliderOffset.y, camera.position.z + playerColliderOffset.z)
                     collided = true;
                     return true;
@@ -170,16 +196,20 @@ function update() {
 
     if (!isPaused)
     {
+        camera.position.y -= playerCrouch;
         playerCrouch = 0;
         if (cHeld) {
-            playerCrouch = 0.5;
+            var mat = new THREE.MeshBasicMaterial()
+            mat.wireframe = true;
+            ((ob = collidables.find(x => { return x.model.includes("vader") })) !== undefined ? ob.object.rotation.y += 0.01 : undefined)
+            playerCrouch = -1.2;
         }
 
         var camVec = new THREE.Vector3();
         camera.getWorldDirection(camVec);
         var theta = Math.atan2(camVec.x, camVec.z);
 
-        camera.position.y -= playerCrouch;
+        
 
         playerVel -= g;
         camera.position.y += playerVel;
@@ -380,11 +410,11 @@ function onKeyDown(e)
             if (!pHeld)
             {
                 isPaused = !isPaused;
-                console.log(plight.position.x, ", ", plight.position.y, ", ", plight.position.z)
                 controls.unlock();
             }
             pHeld = true;
             setDownloadData(setLevelDownloadData(collidables, player, camera));
+            console.log("Level data prepared to download");
             break;
         case "KeyW":
             wHeld = true;
