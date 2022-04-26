@@ -91,7 +91,7 @@ function init() {
 
     isPaused = false;
 
-
+    
 
     plight = new THREE.PointLight(0xffffff, 0.5, 100);
     plight.position.set(1.3, 1.5, 1);

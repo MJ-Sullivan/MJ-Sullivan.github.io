@@ -103,7 +103,7 @@ function getLevelData(dataFile, collidables, scene, camera, player) {
 
 loader = new THREE.GLTFLoader();
 var dloader = new THREE.DRACOLoader();
-dloader.setDecoderPath( 'js/libs/draco/' );
+dloader.setDecoderPath( 'https://www.gstatic.com/draco/versioned/decoders/1.4.1/' );
 loader.setDRACOLoader(dloader);
 
 function addPlayer(level, scene, camera, player) {
